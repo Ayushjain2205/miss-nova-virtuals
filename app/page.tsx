@@ -20,7 +20,7 @@ export default function Home() {
     try {
       setIsLoading(true);
       setError("");
-      const response = await fetch("/api/test-course");
+      const response = await fetch("/api/mock-course");
       const data = await response.json();
 
       if ("error" in data) {
