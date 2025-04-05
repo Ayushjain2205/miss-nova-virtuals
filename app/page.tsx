@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { CourseViewer } from "./components/CourseViewer";
 import { LoadingState } from "./components/LoadingState";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import type { Course } from "./components/CourseViewer";
 
 export default function Home() {
@@ -39,35 +48,38 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-8 max-w-6xl mx-auto">
-      <div className="space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">Miss Nova</h1>
-          <p className="text-xl text-gray-600">Your Personal AI Teacher</p>
-        </div>
+    <main className="min-h-screen p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <Card className="border-none shadow-none">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-4xl">Miss Nova</CardTitle>
+            <CardDescription className="text-xl">
+              Your Personal AI Teacher
+            </CardDescription>
+          </CardHeader>
+        </Card>
 
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter a topic you want to learn about..."
-              className="flex-1 p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={generateCourse}
-              disabled={isLoading}
-              className="px-6 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Generating..." : "Generate Course"}
-            </button>
-          </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex gap-4">
+              <Input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Enter a topic you want to learn about..."
+                className="flex-1"
+              />
+              <Button onClick={generateCourse} disabled={isLoading} size="lg">
+                {isLoading ? "Generating..." : "Generate Course"}
+              </Button>
+            </div>
 
-          {error && (
-            <div className="p-4 text-red-500 bg-red-50 rounded-lg">{error}</div>
-          )}
-        </div>
+            {error && (
+              <div className="mt-4 p-4 text-red-500 bg-red-50 rounded-lg">
+                {error}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {isLoading ? (
           <LoadingState />

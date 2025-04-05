@@ -1,11 +1,20 @@
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+
 export function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      <div className="text-center space-y-2">
-        <p className="text-lg font-medium">Generating your course...</p>
-        <p className="text-sm text-gray-500">This might take a minute or two</p>
-      </div>
-    </div>
+    <Card className="w-full">
+      <CardContent className="flex flex-col items-center justify-center p-8 space-y-6">
+        <div className="w-full max-w-xl space-y-4">
+          <Progress value={33} className="w-full h-2" />
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-medium">Generating your course...</h3>
+            <p className="text-sm text-muted-foreground">
+              Miss Nova is crafting a personalized learning experience for you
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,5 +1,20 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface Quiz {
   question: string;
@@ -28,16 +43,17 @@ interface CourseViewerProps {
 
 export function CourseViewer({ course }: CourseViewerProps) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showQuiz, setShowQuiz] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [activeTab, setActiveTab] = useState("content");
 
   const currentSlide = course.slides[currentSlideIndex];
+  const progress = ((currentSlideIndex + 1) / course.total_slides) * 100;
 
   const handleNextSlide = () => {
     if (currentSlideIndex < course.slides.length - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1);
-      setShowQuiz(false);
+      setActiveTab("content");
       setSelectedAnswer(null);
       setShowExplanation(false);
     }
@@ -46,7 +62,7 @@ export function CourseViewer({ course }: CourseViewerProps) {
   const handlePrevSlide = () => {
     if (currentSlideIndex > 0) {
       setCurrentSlideIndex(currentSlideIndex - 1);
-      setShowQuiz(false);
+      setActiveTab("content");
       setSelectedAnswer(null);
       setShowExplanation(false);
     }
@@ -59,106 +75,127 @@ export function CourseViewer({ course }: CourseViewerProps) {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Course Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{course.title}</h2>
-        <p className="text-gray-600">{course.description}</p>
-      </div>
-
-      {/* Navigation Progress */}
-      <div className="flex justify-center gap-2">
-        {course.slides.map((_, index) => (
-          <div
-            key={index}
-            className={`h-2 w-8 rounded-full ${
-              index === currentSlideIndex
-                ? "bg-blue-500"
-                : index < currentSlideIndex
-                ? "bg-blue-200"
-                : "bg-gray-200"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Slide Content */}
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        {!showQuiz ? (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{course.title}</CardTitle>
+          <CardDescription>{course.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold">{currentSlide.title}</h3>
-            <div className="prose max-w-none">
-              <ReactMarkdown>{currentSlide.content}</ReactMarkdown>
+            <div className="flex items-center gap-4">
+              <Progress value={progress} className="flex-1" />
+              <span className="text-sm text-muted-foreground">
+                {currentSlideIndex + 1} of {course.total_slides}
+              </span>
             </div>
-            <button
-              onClick={() => setShowQuiz(true)}
-              className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-            >
-              Take Quiz
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <h3 className="text-xl font-bold">{currentSlide.quiz.question}</h3>
-            <div className="space-y-3">
-              {currentSlide.quiz.options.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setSelectedAnswer(option)}
-                  className={`w-full p-4 text-left rounded-lg border ${
-                    selectedAnswer === option
-                      ? option === currentSlide.quiz.correct_answer
-                        ? "bg-green-100 border-green-500"
-                        : "bg-red-100 border-red-500"
-                      : "hover:bg-gray-50 border-gray-200"
-                  } ${showExplanation ? "cursor-default" : "cursor-pointer"}`}
-                  disabled={showExplanation}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            {!showExplanation && (
-              <button
-                onClick={handleAnswerSubmit}
-                disabled={!selectedAnswer}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Answer
-              </button>
-            )}
-            {showExplanation && (
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="font-medium">Explanation:</p>
-                <p>{currentSlide.quiz.explanation}</p>
-              </div>
-            )}
-            <button
-              onClick={() => setShowQuiz(false)}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-            >
-              Back to Slide
-            </button>
-          </div>
-        )}
-      </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <button
-          onClick={handlePrevSlide}
-          disabled={currentSlideIndex === 0}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Previous
-        </button>
-        <button
-          onClick={handleNextSlide}
-          disabled={currentSlideIndex === course.slides.length - 1}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next
-        </button>
+            <Card>
+              <CardHeader>
+                <CardTitle>{currentSlide.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="content">Content</TabsTrigger>
+                    <TabsTrigger value="quiz">Quiz</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="content" className="mt-4">
+                    <div className="prose max-w-none dark:prose-invert">
+                      <ReactMarkdown>{currentSlide.content}</ReactMarkdown>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="quiz" className="mt-4 space-y-4">
+                    <div className="text-lg font-medium">
+                      {currentSlide.quiz.question}
+                    </div>
+                    <div className="space-y-2">
+                      {currentSlide.quiz.options.map((option) => (
+                        <Button
+                          key={option}
+                          variant={
+                            selectedAnswer === option
+                              ? option === currentSlide.quiz.correct_answer
+                                ? "default"
+                                : "destructive"
+                              : "outline"
+                          }
+                          className="w-full justify-start"
+                          onClick={() =>
+                            !showExplanation && setSelectedAnswer(option)
+                          }
+                        >
+                          {option}
+                        </Button>
+                      ))}
+                    </div>
+
+                    {!showExplanation && (
+                      <Button
+                        onClick={handleAnswerSubmit}
+                        disabled={!selectedAnswer}
+                        className="w-full"
+                      >
+                        Submit Answer
+                      </Button>
+                    )}
+
+                    {showExplanation && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            Explanation
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p>{currentSlide.quiz.explanation}</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-between gap-4">
+              <Button
+                variant="outline"
+                onClick={handlePrevSlide}
+                disabled={currentSlideIndex === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                onClick={handleNextSlide}
+                disabled={currentSlideIndex === course.slides.length - 1}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-center">
+        <HoverCard>
+          <HoverCardTrigger>
+            <Button variant="ghost" className="text-muted-foreground">
+              Need help?
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">How to use this course</h4>
+              <p className="text-sm">
+                Read through each slide's content, then test your knowledge with
+                the quiz. Use the navigation buttons to move between slides.
+                Your progress is saved automatically.
+              </p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       </div>
     </div>
   );
