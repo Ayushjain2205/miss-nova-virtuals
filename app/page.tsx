@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CourseViewer } from "./components/CourseViewer";
-import { LoadingState } from "./components/LoadingState";
+import { CourseViewer } from "@/components/custom/CourseViewer";
+import { LoadingState } from "@/components/custom/LoadingState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Course } from "./components/CourseViewer";
+import type { Course } from "@/components/custom/CourseViewer";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
