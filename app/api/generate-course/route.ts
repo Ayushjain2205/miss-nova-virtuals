@@ -1,98 +1,64 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { generateCourseOutline } from "../agents/course-planner";
-import { generateSlideContent } from "../agents/slide-generator";
-import { Course, Slide, Quiz } from "@/app/lib/types";
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
+import { NextResponse } from "next/server"
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { prompt, userId } = await request.json();
+    const { prompt } = await req.json()
 
-    if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 }
-      );
+    if (!prompt || typeof prompt !== "string") {
+      return NextResponse.json({ error: "Valid prompt is required" }, { status: 400 })
     }
 
-    // Step 1: Generate course outline
-    const outline = await generateCourseOutline(prompt);
+    const systemPrompt = `You are Miss Nova, an expert AI teacher who creates comprehensive, engaging courses on any topic.
+    
+    Create a structured course based on the user's topic. The course should include:
+    1. A descriptive title and overview
+    2. 5 slides, each with:
+       - A clear title
+       - Detailed markdown content with examples and explanations
+       - A quiz question with 4 options, the correct answer, and an explanation
+    
+    Format your response as a valid JSON object with this structure:
+    {
+      "title": "Course Title",
+      "description": "Brief course description",
+      "total_slides": 5,
+      "slides": [
+        {
+          "slide_number": 1,
+          "title": "Slide Title",
+          "content": "Markdown content with **bold**, *italic*, and bullet points...",
+          "quiz": {
+            "question": "Quiz question?",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "correct_answer": "Option A",
+            "explanation": "Why this is the correct answer..."
+          }
+        },
+        // more slides...
+      ]
+    }`
 
-    // Step 2: Create course record
-    const { data: course, error: courseError } = await supabase
-      .from("courses")
-      .insert({
-        user_id: userId,
-        prompt,
-        title: outline.title,
-        description: outline.description,
-        total_slides: outline.total_slides,
-        status: "generating",
-      })
-      .select()
-      .single();
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      prompt: `Create a course about: ${prompt}`,
+      system: systemPrompt,
+      temperature: 0.7,
+      maxTokens: 4000,
+    })
 
-    if (courseError) throw courseError;
-
-    // Step 3: Generate slides and quizzes in parallel
-    const slidePromises = outline.slides.map(async (slideOutline, index) => {
-      const slideContent = await generateSlideContent(
-        outline.title,
-        slideOutline.title,
-        slideOutline.key_points
-      );
-
-      // Create slide record
-      const { data: slide, error: slideError } = await supabase
-        .from("slides")
-        .insert({
-          course_id: course.id,
-          slide_number: index + 1,
-          title: slideContent.title,
-          content: slideContent.content,
-        })
-        .select()
-        .single();
-
-      if (slideError) throw slideError;
-
-      // Create quiz record
-      const { error: quizError } = await supabase.from("quizzes").insert({
-        slide_id: slide.id,
-        question: slideContent.quiz.question,
-        options: slideContent.quiz.options,
-        correct_answer: slideContent.quiz.correct_answer,
-        explanation: slideContent.quiz.explanation,
-      });
-
-      if (quizError) throw quizError;
-
-      return slide;
-    });
-
-    // Wait for all slides and quizzes to be generated
-    await Promise.all(slidePromises);
-
-    // Update course status to completed
-    const { error: updateError } = await supabase
-      .from("courses")
-      .update({ status: "completed" })
-      .eq("id", course.id);
-
-    if (updateError) throw updateError;
-
-    return NextResponse.json({ courseId: course.id });
+    // Parse the JSON response
+    try {
+      const courseData = JSON.parse(text)
+      return NextResponse.json(courseData)
+    } catch (parseError) {
+      console.error("Failed to parse AI response as JSON:", parseError)
+      return NextResponse.json({ error: "Failed to generate a valid course structure" }, { status: 500 })
+    }
   } catch (error) {
-    console.error("Error generating course:", error);
-    return NextResponse.json(
-      { error: "Failed to generate course" },
-      { status: 500 }
-    );
+    console.error("Course generation error:", error)
+    return NextResponse.json({ error: "Failed to generate course" }, { status: 500 })
   }
 }
+

@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
 const mockCourse = {
   title: "Introduction to JavaScript Programming",
-  description:
-    "A comprehensive introduction to JavaScript basics and core concepts",
+  description: "A comprehensive introduction to JavaScript basics and core concepts",
   total_slides: 5,
   slides: [
     {
@@ -19,8 +18,7 @@ const mockCourse = {
           "It enables the addition of interactivity to web pages.",
           "It is used to style web pages.",
         ],
-        correct_answer:
-          "It enables the addition of interactivity to web pages.",
+        correct_answer: "It enables the addition of interactivity to web pages.",
         explanation:
           "JavaScript is crucial in web development because it is the primary language that adds interactivity to web pages. This includes everything from forms validation to dynamic content loading, which are key for engaging user experiences.",
       },
@@ -31,14 +29,8 @@ const mockCourse = {
       content:
         "## Basic Syntax and Structure in JavaScript\n\n### Understanding Variables and Data Types\n- **Variables** are containers for storing data values.\n- Use the `var`, `let`, or `const` keyword to declare variables.\n- JavaScript is **dynamically typed**, meaning variables do not need a type declared.\n- Common data types include:\n  - String\n  - Number\n  - Boolean\n  - Array\n  - Object\n  - Undefined\n\n### Introduction to Operators and Expressions\n- **Operators** are symbols that perform operations on variables and values.\n- Types of operators include:\n  - Arithmetic (`+`, `-`, `*`, `/`)\n  - Comparison (`==`, `!=`, `>`, `<`)\n  - Logical (`&&`, `||`, `!`)\n- **Expressions** combine variables and operators to create a value.\n\n### Function and Syntax Structure\n- A **function** is a block of code designed to perform a particular task.\n- Declared with the `function` keyword, followed by a name, parameters, and a code block.\n- Example:\n  ```javascript\n  function myFunction(p1, p2) {\n    return p1 * p2;\n  }\n  ```\n- Functions can be named or anonymous and can be declared or expressed.",
       quiz: {
-        question:
-          "Which of the following is NOT a valid JavaScript variable declaration?",
-        options: [
-          "var name = 'John';",
-          "let age = 30;",
-          "const job = 'Developer';",
-          "int height = 175;",
-        ],
+        question: "Which of the following is NOT a valid JavaScript variable declaration?",
+        options: ["var name = 'John';", "let age = 30;", "const job = 'Developer';", "int height = 175;"],
         correct_answer: "int height = 175;",
         explanation:
           "JavaScript does not use `int` for declaring variables. Instead, it uses `var`, `let`, or `const`. The correct way to declare a variable for height would be using one of these keywords, not `int`.",
@@ -52,12 +44,7 @@ const mockCourse = {
       quiz: {
         question:
           "Which control structure is best used for executing a block of code multiple times with a known number of iterations?",
-        options: [
-          "If-Else Statements",
-          "For Loop",
-          "While Loop",
-          "Switch-Case",
-        ],
+        options: ["If-Else Statements", "For Loop", "While Loop", "Switch-Case"],
         correct_answer: "For Loop",
         explanation:
           "The For Loop is specifically designed for executing a block of code a specific number of times, making it the best choice for iterating a known number of times.",
@@ -76,8 +63,7 @@ const mockCourse = {
           "A function can access variables within its scope even after the parent function has closed",
           "Events cannot be handled using functions",
         ],
-        correct_answer:
-          "A function can access variables within its scope even after the parent function has closed",
+        correct_answer: "A function can access variables within its scope even after the parent function has closed",
         explanation:
           "This statement is true and describes a closure, where a function can access variables from its parent function's scope even after the parent function has executed, showcasing the unique feature of closures in JavaScript.",
       },
@@ -88,25 +74,20 @@ const mockCourse = {
       content:
         "## Basics of Document Object Model (DOM)\n\n- The DOM is a programming interface for web documents.\n- It represents the page so that programs can change the document structure, style, and content.\n- The DOM represents the document as nodes and objects; that way, programming languages can interact with the page.\n\n## Manipulating Web Page Elements with JavaScript\n\n- JavaScript can access and change all the elements of a DOM.\n- Common operations include creating new elements, deleting elements, and changing element styles.\n- Example: `document.getElementById('id').innerHTML = 'New Content';`\n\n## Brief Overview of ECMAScript 6 (ES6) Features\n\n- ES6, released in 2015, is a major update to JavaScript that includes new syntax and features.\n- Key features include `let` and `const` for variable declarations, arrow functions, classes, promises, and template literals.\n- These features make JavaScript more powerful and easier to write in a concise, readable manner.\n\nES6 has been a significant step forward for JavaScript, introducing features that enable developers to write more efficient and readable code.",
       quiz: {
-        question:
-          "Which of the following is NOT a feature introduced in ECMAScript 6 (ES6)?",
-        options: [
-          "Arrow functions",
-          "The `var` keyword",
-          "Promises",
-          "Template literals",
-        ],
+        question: "Which of the following is NOT a feature introduced in ECMAScript 6 (ES6)?",
+        options: ["Arrow functions", "The `var` keyword", "Promises", "Template literals"],
         correct_answer: "The `var` keyword",
         explanation:
           "The `var` keyword was already part of JavaScript before ES6. ES6 introduced `let` and `const` as new ways to declare variables, offering block-scope variables and constants, but did not introduce `var`.",
       },
     },
   ],
-};
+}
 
 export async function GET() {
   // Simulate a delay to mimic API latency
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  return NextResponse.json(mockCourse);
+  return NextResponse.json(mockCourse)
 }
+
