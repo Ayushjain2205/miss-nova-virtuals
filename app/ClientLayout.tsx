@@ -5,6 +5,7 @@ import "./globals.css"
 import { Nunito, Quicksand } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/custom/Navbar"
+import { ThirdwebProvider } from "thirdweb/react"
 
 // Font setup
 const quicksand = Quicksand({
@@ -37,8 +38,10 @@ export default function ClientLayout({
       </head>
       <body className={`${quicksand.variable} ${nunito.variable} font-sans bg-background`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+         <ThirdwebProvider>
           <Navbar />
           <div className="pt-2">{children}</div>
+         </ThirdwebProvider>
         </ThemeProvider>
       </body>
     </html>
