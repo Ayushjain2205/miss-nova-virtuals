@@ -7,6 +7,8 @@ import { Mascot } from "@/components/custom/Mascot"
 import { BookOpen, GraduationCap, Sparkles, Menu, X } from "lucide-react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { ConnectButton } from "thirdweb/react"
+import { client } from "@/lib/client"
 
 export function Navbar() {
   const pathname = usePathname()
@@ -49,10 +51,11 @@ export function Navbar() {
         </nav>
 
         {/* Create Course Button */}
-        <div className="hidden md:block">
-          <Button className="btn-playful font-body" size="sm">
+        <div className="hidden md:flex items-center gap-4">
+          <ConnectButton client={client} theme="light" />
+          <Button className="btn-playful font-body bg-primary text-white hover:bg-primary/90" size="sm">
             <Sparkles className="h-4 w-4 mr-2" />
-            Request Course
+            Create Course
           </Button>
         </div>
 
@@ -95,9 +98,9 @@ export function Navbar() {
                   </Link>
                 )
               })}
-              <Button className="w-full btn-playful font-body" size="sm">
+              <Button className="w-full btn-playful font-body bg-primary text-white hover:bg-primary/90" size="sm">
                 <Sparkles className="h-4 w-4 mr-2" />
-                Request Course
+                Create Course
               </Button>
             </div>
           </motion.div>
