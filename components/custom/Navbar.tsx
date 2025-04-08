@@ -9,8 +9,21 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ConnectButton } from "thirdweb/react"
 import { client } from "@/lib/client"
+import { defineChain } from "thirdweb/chains";
 
 export function Navbar() {
+
+    const chain = defineChain({
+    id: 656476,
+    name: "Open Campus Codex",
+    rpc: "https://rpc.open-campus-codex.gelato.digital",
+    nativeCurrency: {
+      name: "EDU ",
+      symbol: "EDU",
+      decimals: 18,
+    },
+    });
+  
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -52,7 +65,7 @@ export function Navbar() {
 
         {/* Create Course Button */}
         <div className="hidden md:flex items-center gap-4">
-          <ConnectButton client={client} theme="light" />
+          <ConnectButton client={client} theme="light" chain={chain} />
           <Button className="btn-playful font-body bg-primary text-white hover:bg-primary/90" size="sm">
             <Sparkles className="h-4 w-4 mr-2" />
             Create Course
