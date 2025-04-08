@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -9,6 +9,26 @@ import { ContinuousCourseComposition } from "@/components/custom/remotion/Contin
 import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface Quiz {
+  question: string
+  options: string[]
+  correct_answer: string
+  explanation: string
+}
+
+interface CourseSection {
+  title: string
+  content: string
+  key_points: string[]
+  quiz: Quiz
+}
+
+interface CourseContent {
+  title: string
+  description: string
+  sections: CourseSection[]
+}
+
 export default function VideoCoursePage() {
   const [currentFrame, setCurrentFrame] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
@@ -16,8 +36,16 @@ export default function VideoCoursePage() {
   const [completedSections, setCompletedSections] = useState<number[]>([])
   const playerRef = useRef<PlayerRef>(null)
 
+  useEffect(() => {
+    if (playerRef.current) {
+      playerRef.current.addEventListener('timeupdate', (e: any) => {
+        setCurrentFrame(e.detail.frame)
+      })
+    }
+  }, [])
+
   // Example course content
-  const courseContent = {
+  const courseContent: CourseContent = {
     title: "Introduction to React Hooks",
     description: "Learn the fundamentals of React Hooks with this animated video course",
     sections: [
@@ -220,7 +248,6 @@ export default function VideoCoursePage() {
                         height: "100%",
                       }}
                       loop={false}
-                      onFrame={setCurrentFrame}
                       controls
                       acknowledgeRemotionLicense
                     />

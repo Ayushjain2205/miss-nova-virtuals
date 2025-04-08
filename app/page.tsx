@@ -11,8 +11,31 @@ import { ConfettiEffect } from "@/components/custom/ConfettiEffect"
 import { motion } from "framer-motion"
 import { CourseTile } from "@/components/custom/CourseTile"
 
+interface Quiz {
+  question: string
+  options: string[]
+  correct_answer: string
+  explanation: string
+}
+
+interface Slide {
+  slide_number: number
+  title: string
+  content: string
+  quiz: Quiz
+}
+
+interface Course {
+  title: string
+  difficulty: "Beginner" | "Intermediate" | "Advanced"
+  completion: number
+  icon: string
+  tags: string[]
+  slides?: Slide[]
+}
+
 // Sample course data
-const popularCourses = [
+const popularCourses: Course[] = [
   {
     title: "Introduction to JavaScript",
     difficulty: "Beginner",
@@ -154,11 +177,11 @@ popularCourses.forEach((course) => {
 
 export default function Home() {
   const router = useRouter()
-  const [prompt, setPrompt] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [motivationalMessage, setMotivationalMessage] = useState("Let's learn something new!")
+  const [prompt, setPrompt] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>("")
+  const [showConfetti, setShowConfetti] = useState<boolean>(false)
+  const [motivationalMessage, setMotivationalMessage] = useState<string>("Let's learn something new!")
 
   const generateCourse = async () => {
     if (!prompt.trim()) {
