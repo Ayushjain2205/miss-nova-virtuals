@@ -26,7 +26,7 @@ export function Navbar() {
         {/* Logo and Name - clicking this navigates to home */}
         <Link href="/" className="flex items-center gap-2">
           <div className="relative h-8 w-8 overflow-hidden">
-            <Mascot width={32} height={32} className="absolute inset-0" />
+            <img src="/images/logo.svg" alt="Miss Nova Logo" className="absolute inset-0 h-full w-full" />
           </div>
           <span className="font-heading text-xl font-bold text-primary">Miss Nova</span>
         </Link>
