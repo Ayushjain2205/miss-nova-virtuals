@@ -221,7 +221,18 @@ export default function Home() {
             transition={{ duration: 0.4 }}
           >
             <div className="relative">
-              <Mascot width={280} height={280} />
+              <video
+                className="rounded-full "
+                width={320}
+                height={320}
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                <source src="/videos/mascot.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
               <motion.div
                 className="absolute -top-4 right-0 transform rotate-12"
                 initial={{ scale: 0 }}
