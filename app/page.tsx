@@ -4,9 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search } from "lucide-react"
+import { Search, ChevronRight } from "lucide-react"
 import { LoadingState } from "@/components/custom/LoadingState"
-import { Mascot } from "@/components/custom/Mascot"
 import { ConfettiEffect } from "@/components/custom/ConfettiEffect"
 import { motion } from "framer-motion"
 import { CourseTile } from "@/components/custom/CourseTile"
@@ -344,7 +343,7 @@ export default function Home() {
         {/* Loading state */}
         {isLoading && <LoadingState />}
 
-        {/* Popular courses section */}
+             {/* Popular courses section - Marquee Effect */}
         <motion.div
           className="py-12"
           initial={{ y: 20, opacity: 0 }}
@@ -354,24 +353,48 @@ export default function Home() {
         >
           <h2 className="text-3xl font-bold text-center mb-8 font-heading">Explore Courses by Miss Nova</h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {popularCourses.map((course, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index, duration: 0.3 }}
-              >
-                <CourseTile
-                  title={course.title}
-                  difficulty={course.difficulty}
-                  completion={course.completion}
-                  icon={course.icon}
-                  tags={course.tags}
-                  slides={course.slides}
-                />
-              </motion.div>
-            ))}
+          {/* Marquee container */}
+          <div className="relative overflow-hidden py-4">
+            {/* Single marquee row */}
+            <motion.div
+              className="flex gap-6"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                repeat: Number.POSITIVE_INFINITY,
+                repeatType: "loop",
+                duration: 30,
+                ease: "linear",
+              }}
+            >
+              {/* Double the courses to create seamless loop */}
+              {[...popularCourses, ...popularCourses].map((course, index) => (
+                <div key={`course-${index}`} className="w-[300px] flex-shrink-0">
+                  <CourseTile
+                    title={course.title}
+                    difficulty={course.difficulty}
+                    completion={course.completion}
+                    icon={course.icon}
+                    creator={course.creator}
+                    tags={course.tags}
+                    slides={course.slides}
+                  />
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Gradient overlays for fade effect on edges */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10"></div>
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10"></div>
+          </div>
+
+          {/* View all courses button */}
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={() => router.push("/explore")}
+              className="bg-primary hover:bg-primary/90 btn-playful font-body"
+            >
+              View All Courses <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </motion.div>
       </div>
