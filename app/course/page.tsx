@@ -28,7 +28,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { PointsDisplay } from "@/components/custom/PointsDisplay"
 import { LeaderboardButton } from "@/components/custom/LeaderboardButton"
 import { Certificate } from "@/components/custom/Certificate"
-import { Mascot } from "@/components/custom/Mascot"
+// Removed Mascot import as we're using video directly
 
 interface LeaderboardEntry {
   id: string
@@ -182,26 +182,38 @@ export default function CoursePage() {
     })
   }
 
-  const handleAnswerSubmit = () => {
-    console.log('handleAnswerSubmit called');
+  const handleAnswerSubmit = (e: React.MouseEvent) => {
+    // Prevent default button behavior which might cause scroll
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Store current scroll position
+    const scrollPosition = window.scrollY
+
     if (selectedAnswer && course) {
+      // Restore scroll position after state updates
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition)
+      })
       setShowExplanation(true)
 
       const isCorrect = selectedAnswer === course.slides[currentSlideIndex].quiz.correct_answer;
       
-      // Show mascot bubble feedback
+      // Show mascot bubble
       setMascotBubble({
         visible: true,
         isCorrect,
-        message: isCorrect 
-          ? "Great job! That's the correct answer!"
-          : "Not quite right. Let's review the explanation.",
+        message: ""
       })
 
-      // Hide mascot bubble after 5 seconds
+      // Hide mascot bubble after 3 seconds
       setTimeout(() => {
         setMascotBubble((prev) => ({ ...prev, visible: false }))
-      }, 5000)
+        // Restore scroll position again after bubble disappears
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollPosition)
+        })
+      }, 3000)
 
       if (isCorrect) {
         if (!completedSlides.includes(currentSlideIndex)) {
@@ -212,12 +224,23 @@ export default function CoursePage() {
     }
   }
 
-  const handleNextSlide = () => {
+  const handleNextSlide = (e: React.MouseEvent) => {
+    // Prevent default button behavior
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Store current scroll position
+    const scrollPosition = window.scrollY
+
     if (course && currentSlideIndex < course.slides.length - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1)
       setSelectedAnswer(null)
       setShowExplanation(false)
-      window.scrollTo(0, 0)
+
+      // Restore scroll position after state updates
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition)
+      })
 
       // Award points for advancing to next slide
       if (!completedSlides.includes(currentSlideIndex + 1)) {
@@ -295,51 +318,25 @@ export default function CoursePage() {
         {mascotBubble.visible && (
           <motion.div
             className="fixed bottom-10 left-10 z-[9999] pointer-events-none"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
+            initial={{ y: 100, opacity: 0, scale: 0.8 }}
+            animate={{ y: -50, opacity: 1, scale: 1 }}
+            exit={{ y: -150, opacity: 0 }}
             transition={{
-              type: "spring",
-              stiffness: 100,
-              damping: 15,
-              duration: 1.5,
-            }}
-            style={{
-              filter: "drop-shadow(0px 5px 15px rgba(0,0,0,0.25))",
+              duration: 2,
+              ease: "easeOut"
             }}
           >
-            <div className="relative">
-              {/* Speech bubble with tail */}
-              <div
-                className={`
-                  p-4 rounded-2xl max-w-xs relative
-                  ${mascotBubble.isCorrect ? "bg-green-500 text-white" : "bg-red-500 text-white"}
-                `}
-                style={{
-                  borderRadius: "20px",
-                }}
+            <div className="w-48 h-48 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm border-2 border-white/20 shadow-lg">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-contain"
+                style={{ transform: 'scale(1)' }}
               >
-                {/* Tail */}
-                <div
-                  className={`
-                    absolute -bottom-4 left-10 w-8 h-8 transform rotate-45
-                    ${mascotBubble.isCorrect ? "bg-green-500" : "bg-red-500"}
-                  `}
-                ></div>
-
-                {/* Content */}
-                <div className="relative z-10">
-                  <p className="font-bold text-lg mb-1">
-                    {mascotBubble.isCorrect ? "Great job! 🎉" : "Not quite right! 🤔"}
-                  </p>
-                  <p>{mascotBubble.message}</p>
-                </div>
-              </div>
-
-              {/* Mascot */}
-              <div className="absolute -bottom-10 left-8 w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-lg">
-                <Mascot width={80} height={80} />
-              </div>
+                <source src="/videos/mascot.mp4" type="video/mp4" />
+              </video>
             </div>
           </motion.div>
         )}
@@ -616,7 +613,7 @@ export default function CoursePage() {
 
                       {!showExplanation && (
                         <Button
-                          onClick={handleAnswerSubmit}
+                          onClick={(e) => handleAnswerSubmit(e)}
                           disabled={!selectedAnswer}
                           className="w-full bg-secondary hover:bg-secondary/90 text-white py-6 font-body"
                         >
@@ -681,7 +678,7 @@ export default function CoursePage() {
 
                     {currentSlideIndex < course.slides.length - 1 ? (
                       <Button
-                        onClick={handleNextSlide}
+                        onClick={(e) => handleNextSlide(e)}
                         disabled={!completedSlides.includes(currentSlideIndex) && currentSlideIndex !== 0}
                         className="bg-primary btn-playful font-body"
                       >
