@@ -57,7 +57,17 @@ interface LeaderboardEntry {
   isCurrentUser?: boolean
 }
 
+// Video player configuration
+const VIDEO_CONFIG = {
+  fps: 30,
+  totalDuration: 600,
+  compositionWidth: 1920,
+  compositionHeight: 1080,
+} as const
+
 export default function VideoCoursePage() {
+  // State
+  const [isLoading, setIsLoading] = useState(true)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
@@ -75,114 +85,47 @@ export default function VideoCoursePage() {
     message: "",
   })
   const [courseContent, setCourseContent] = useState<CourseContent>({
-    title: "Introduction to React Hooks",
-    description: "Learn the fundamentals of React Hooks with this animated video course",
-    sections: [
-      {
-        title: "What are React Hooks?",
-        content:
-          "React Hooks are functions that let you use state and other React features without writing a class component. They were introduced in React 16.8.",
-        key_points: [
-          "Introduced in React 16.8",
-          "Allow using state in functional components",
-          "Simplify complex component logic",
-        ],
-        quiz: {
-          question: "What is the main benefit of React Hooks?",
-          options: [
-            "They make components render faster",
-            "They allow using state in functional components",
-            "They replace the need for React entirely",
-            "They only work in class components",
-          ],
-          correct_answer: "They allow using state in functional components",
-          explanation:
-            "React Hooks allow functional components to use state and other React features that were previously only available in class components, making your code more concise and easier to understand.",
-        },
-      },
-      {
-        title: "useState Hook",
-        content:
-          "The useState hook lets you add state to functional components. It returns a stateful value and a function to update it.",
-        key_points: ["Manages component state", "Returns [state, setState]", "Can be called multiple times"],
-        quiz: {
-          question: "What does the useState hook return?",
-          options: [
-            "A single state value",
-            "A state value and a function to update it",
-            "A function to update state",
-            "A React component",
-          ],
-          correct_answer: "A state value and a function to update it",
-          explanation:
-            "The useState hook returns an array with exactly two elements: the current state value and a function that lets you update it. This is why we use array destructuring when calling useState.",
-        },
-      },
-      {
-        title: "useEffect Hook",
-        content:
-          "The useEffect hook lets you perform side effects in function components. It serves the same purpose as componentDidMount, componentDidUpdate, and componentWillUnmount in React classes.",
-        key_points: ["Handles side effects", "Runs after render", "Can clean up with return function"],
-        quiz: {
-          question: "When does the useEffect hook run?",
-          options: [
-            "Before the component renders",
-            "Only once when the component mounts",
-            "After every render by default",
-            "Only when state changes",
-          ],
-          correct_answer: "After every render by default",
-          explanation:
-            "By default, useEffect runs after the first render and after every update. You can control this behavior by passing a dependency array as the second argument.",
-        },
-      },
-      {
-        title: "useContext Hook",
-        content:
-          "The useContext hook accepts a context object and returns the current context value. It's a cleaner way to consume context in functional components.",
-        key_points: ["Consumes React context", "Simplifies context API usage", "Updates when context changes"],
-        quiz: {
-          question: "What does the useContext hook do?",
-          options: [
-            "Creates a new context",
-            "Provides context to child components",
-            "Consumes and accesses context values",
-            "Replaces the Context API",
-          ],
-          correct_answer: "Consumes and accesses context values",
-          explanation:
-            "The useContext hook is used to consume and access values from a React context. It provides a more concise way to access context compared to the Context.Consumer component.",
-        },
-      },
-      {
-        title: "Custom Hooks",
-        content:
-          "Custom hooks let you extract component logic into reusable functions. They're just JavaScript functions whose name starts with 'use' and may call other hooks.",
-        key_points: ["Reuse stateful logic", "Share logic between components", "Simplify complex components"],
-        quiz: {
-          question: "What naming convention must custom hooks follow?",
-          options: [
-            "They must start with 'hook'",
-            "They must start with 'use'",
-            "They must end with 'Hook'",
-            "There is no specific naming convention",
-          ],
-          correct_answer: "They must start with 'use'",
-          explanation:
-            "Custom hooks must start with 'use' (e.g., useFormInput, useFetch). This convention is important because it allows React to check for violations of Hooks rules and it signals that a function is a Hook.",
-        },
-      },
-    ],
+    title: "",
+    description: "",
+    sections: [],
   })
+
+  // Refs
   const playerRef = useRef<PlayerRef>(null)
 
+  // Effects
   useEffect(() => {
-    if (playerRef.current) {
-      playerRef.current.addEventListener('timeupdate', (e: any) => {
-        setCurrentFrame(e.detail.frame)
-      })
+    const fetchCourseContent = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch('/api/mock-video-course')
+        const data = await response.json()
+        setCourseContent(data)
+      } catch (error) {
+        console.error('Error fetching course content:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    fetchCourseContent()
   }, [])
+
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      if (playerRef.current) {
+        setCurrentFrame(playerRef.current.getCurrentFrame())
+      }
+    }
+
+    const player = playerRef.current
+    if (player) {
+      player.addEventListener('timeupdate', handleTimeUpdate)
+      return () => {
+        player.removeEventListener('timeupdate', handleTimeUpdate)
+      }
+    }
+  }, [playerRef])
 
   const awardPoints = (amount: number) => {
     setPoints((prev) => prev + amount)
@@ -191,80 +134,90 @@ export default function VideoCoursePage() {
     // Update leaderboard
     setLeaderboardData((prev) => {
       const updatedData = prev
-        .map((entry) => {
+        .map((entry: LeaderboardEntry) => {
           if (entry.isCurrentUser) {
             return { ...entry, points: entry.points + amount }
           }
           return entry
         })
-        .sort((a, b) => b.points - a.points)
+        .sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.points - a.points)
 
       // Recalculate ranks and update user rank
-      const newData = updatedData.map((entry, i) => ({ ...entry, rank: i + 1 }))
-      const newUserRank = newData.findIndex((entry) => entry.isCurrentUser) + 1
-      setUserRank(newUserRank)
-
+      const newData = updatedData.map((entry: LeaderboardEntry, i: number) => ({ ...entry, rank: i + 1 }))
+      const userEntry = newData.find((entry: LeaderboardEntry) => entry.isCurrentUser)
+      if (userEntry) {
+        setUserRank(userEntry.rank)
+      }
       return newData
     })
   }
 
   const handleAnswerSubmit = () => {
-    if (!selectedAnswer || !courseContent) return
+    if (!selectedAnswer || !courseContent.sections[currentSectionIndex]) return
 
-    const currentSection = courseContent.sections[currentSectionIndex]
-    const isCorrect = selectedAnswer === currentSection.quiz.correct_answer
+    const isCorrect =
+      courseContent.sections[currentSectionIndex].quiz.correct_answer ===
+      selectedAnswer
 
-    // Store the answer in the course data
-    const updatedContent = { ...courseContent }
-    updatedContent.sections[currentSectionIndex].userAnswer = selectedAnswer
-    updatedContent.sections[currentSectionIndex].isCorrect = isCorrect
-    setCourseContent(updatedContent)
+    const updatedSections = [...courseContent.sections]
+    updatedSections[currentSectionIndex] = {
+      ...updatedSections[currentSectionIndex],
+      userAnswer: selectedAnswer,
+      isCorrect,
+    }
+
+    setCourseContent({
+      ...courseContent,
+      sections: updatedSections,
+    })
 
     if (isCorrect) {
-      // Award points for correct answer
-      awardPoints(25)
-
+      awardPoints(100)
       if (!completedSections.includes(currentSectionIndex)) {
         setCompletedSections([...completedSections, currentSectionIndex])
-        // Award additional points for completing new section
-        awardPoints(10)
+        awardPoints(200)
       }
     }
 
     setShowExplanation(true)
 
-    // Update mascot bubble
+    // Show mascot bubble
     setMascotBubble({
       visible: true,
       isCorrect,
       message: isCorrect
-        ? "Great job! That's correct! 🎉"
-        : "Don't worry! Learning from mistakes makes us stronger! 💪",
+        ? "Great job! You got it right! 🎉"
+        : "Don't worry, learning from mistakes makes us stronger! 💪",
     })
 
     // Hide mascot bubble after 3 seconds
     setTimeout(() => {
-      setMascotBubble((prev) => ({ ...prev, visible: false }))
+      setMascotBubble((prev) => ({
+        ...prev,
+        visible: false,
+      }))
     }, 3000)
   }
 
   const jumpToSection = (sectionIndex: number) => {
-    if (sectionIndex >= 0 && sectionIndex < courseContent.sections.length) {
-      setCurrentSectionIndex(sectionIndex)
-      setCurrentFrame(sectionIndex * 450)
-      setSelectedAnswer(null)
-      setShowExplanation(false)
-    }
+    if (sectionIndex < 0 || sectionIndex >= courseContent.sections.length) return
+    setCurrentSectionIndex(sectionIndex)
+    setCurrentFrame(0)
+    setSelectedAnswer(null)
+    setShowExplanation(false)
   }
 
   const handleNextSection = () => {
-    if (currentSectionIndex < courseContent.sections.length - 1) {
+    if (
+      currentSectionIndex < courseContent.sections.length - 1 &&
+      currentSectionIndex !== undefined
+    ) {
       jumpToSection(currentSectionIndex + 1)
     }
   }
 
   const handlePrevSection = () => {
-    if (currentSectionIndex > 0) {
+    if (currentSectionIndex > 0 && currentSectionIndex !== undefined) {
       jumpToSection(currentSectionIndex - 1)
     }
   }
@@ -312,8 +265,8 @@ export default function VideoCoursePage() {
               <Card className="border border-muted rounded-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b border-muted">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-heading">{currentSection.title}</CardTitle>
-                    {isCurrentSectionCompleted && (
+                    <CardTitle className="text-xl font-heading">{courseContent.sections[currentSectionIndex]?.title || ""}</CardTitle>
+                    {completedSections.includes(currentSectionIndex) && (
                       <div className="flex items-center text-secondary">
                         <CheckCircle className="h-5 w-5 mr-1" />
                         <span className="text-sm font-medium">Completed</span>
@@ -324,50 +277,62 @@ export default function VideoCoursePage() {
                 <CardContent className="p-6">
                   {/* Video Player */}
                   <div className="aspect-video bg-black">
-                    <Player
-                      ref={playerRef}
-                      component={ContinuousCourseComposition}
-                      inputProps={{
-                        courseContent,
-                      }}
-                      durationInFrames={totalDuration}
-                      fps={fps}
-                      compositionWidth={1920}
-                      compositionHeight={1080}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                      }}
-                      loop={false}
-                      controls
-                      acknowledgeRemotionLicense
-                    />
+                    {isLoading ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                          <div className="text-primary font-medium">Loading course content...</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <Player
+                        ref={playerRef}
+                        component={ContinuousCourseComposition}
+                        inputProps={{
+                          courseContent,
+                          currentFrame,
+                        }}
+                        durationInFrames={VIDEO_CONFIG.totalDuration}
+                        fps={VIDEO_CONFIG.fps}
+                        compositionWidth={VIDEO_CONFIG.compositionWidth}
+                        compositionHeight={VIDEO_CONFIG.compositionHeight}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                        }}
+                        autoPlay
+                        loop={false}
+                        controls
+                        initialFrame={currentFrame}
+                        clickToPlay
+                        spaceKeyToPlayOrPause
+                        showVolumeControls
+                        allowFullscreen
+                        doubleClickToFullscreen
+                        moveToBeginningWhenEnded
+                        acknowledgeRemotionLicense
+                      />
+                    )}
                   </div>
 
                   {/* Quiz Section */}
-                  <div className="p-6 space-y-6 border-t border-primary/10">
-                    <div className="flex items-center mb-4">
-                      <div className="bg-primary/10 p-2 rounded-full mr-3">
-                        <HelpCircle className="h-5 w-5 text-primary" />
+                  {!isLoading && (
+                    <div className="p-6 space-y-6 border-t border-primary/10">
+                      <div className="space-y-6">
+                        <QuizSection
+                          question={courseContent.sections[currentSectionIndex]?.quiz.question || ""}
+                          options={courseContent.sections[currentSectionIndex]?.quiz.options || []}
+                          correctAnswer={courseContent.sections[currentSectionIndex]?.quiz.correct_answer || ""}
+                          explanation={courseContent.sections[currentSectionIndex]?.quiz.explanation || ""}
+                          userAnswer={courseContent.sections[currentSectionIndex]?.userAnswer}
+                          selectedAnswer={selectedAnswer}
+                          showExplanation={showExplanation}
+                          onAnswerSelect={setSelectedAnswer}
+                          onAnswerSubmit={handleAnswerSubmit}
+                        />
                       </div>
-                      <h3 className="text-xl font-bold font-heading">Knowledge Check</h3>
                     </div>
-
-                    <div className="space-y-6">
-                      <div className="text-lg font-bold font-heading">{currentSection.quiz.question}</div>
-                      <QuizSection
-                        question={currentSection.quiz.question}
-                        options={currentSection.quiz.options}
-                        correctAnswer={currentSection.quiz.correct_answer}
-                        explanation={currentSection.quiz.explanation}
-                        userAnswer={currentSection.userAnswer}
-                        selectedAnswer={selectedAnswer}
-                        showExplanation={showExplanation}
-                        onAnswerSelect={setSelectedAnswer}
-                        onAnswerSubmit={handleAnswerSubmit}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 

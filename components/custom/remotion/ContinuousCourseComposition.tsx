@@ -25,7 +25,7 @@ export const ContinuousCourseComposition = ({ courseContent }: ContinuousCourseC
   const sectionDuration = 450
 
   // Calculate which section we're currently in
-  const currentSectionIndex = Math.min(Math.floor(frame / sectionDuration), courseContent.sections.length - 1)
+  const currentSectionIndex = Math.min(Math.floor(frame / sectionDuration), Math.max(0, courseContent.sections.length - 1))
 
   // Calculate the frame relative to the current section
   const frameInSection = frame - currentSectionIndex * sectionDuration
@@ -39,11 +39,19 @@ export const ContinuousCourseComposition = ({ courseContent }: ContinuousCourseC
   const transitionStart = 420 // Start transition to next section
 
   // Get current section data
-  const currentSection = courseContent.sections[currentSectionIndex]
+  const currentSection = courseContent.sections[currentSectionIndex] || {
+    title: "",
+    content: "",
+    key_points: [],
+  }
 
   // Get next section data (if available)
   const hasNextSection = currentSectionIndex < courseContent.sections.length - 1
-  const nextSection = hasNextSection ? courseContent.sections[currentSectionIndex + 1] : null
+  const nextSection = hasNextSection ? courseContent.sections[currentSectionIndex + 1] : {
+    title: "",
+    content: "",
+    key_points: [],
+  }
 
   // Transition animation for section change
   const transitionProgress = hasNextSection
@@ -271,7 +279,7 @@ export const ContinuousCourseComposition = ({ courseContent }: ContinuousCourseC
                   maxWidth: 900,
                 }}
               >
-                {currentSection.key_points.map((point, index) => {
+                {(currentSection.key_points || []).map((point, index) => {
                   const delay = pointsStart + 20 + index * 15
                   const pointOpacity =
                     frameInSection >= delay
@@ -358,7 +366,7 @@ export const ContinuousCourseComposition = ({ courseContent }: ContinuousCourseC
                 marginBottom: 60,
               }}
             >
-              {nextSection.title}
+              {nextSection?.title || ""}
             </div>
           </div>
         )}
