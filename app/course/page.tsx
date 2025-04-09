@@ -50,6 +50,8 @@ interface Slide {
   title: string
   content: string
   quiz: Quiz
+  userAnswer?: string
+  isCorrect?: boolean
 }
 
 export interface Course {
@@ -183,45 +185,46 @@ export default function CoursePage() {
   }
 
   const handleAnswerSubmit = (e: React.MouseEvent) => {
-    // Prevent default button behavior which might cause scroll
     e.preventDefault()
-    e.stopPropagation()
+    if (!selectedAnswer || !course) return
 
-    // Store current scroll position
-    const scrollPosition = window.scrollY
+    const currentQuiz = course.slides[currentSlideIndex].quiz
+    const isCorrect = selectedAnswer === currentQuiz.correct_answer
 
-    if (selectedAnswer && course) {
-      // Restore scroll position after state updates
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollPosition)
-      })
-      setShowExplanation(true)
+    // Store the answer and correctness in the course data
+    const updatedCourse = { ...course }
+    updatedCourse.slides[currentSlideIndex].userAnswer = selectedAnswer
+    updatedCourse.slides[currentSlideIndex].isCorrect = isCorrect
+    setCourse(updatedCourse)
 
-      const isCorrect = selectedAnswer === course.slides[currentSlideIndex].quiz.correct_answer;
-      
-      // Show mascot bubble
-      setMascotBubble({
-        visible: true,
-        isCorrect,
-        message: ""
-      })
+    if (isCorrect) {
+      // Award points for correct answer
+      awardPoints(25)
 
-      // Hide mascot bubble after 3 seconds
-      setTimeout(() => {
-        setMascotBubble((prev) => ({ ...prev, visible: false }))
-        // Restore scroll position again after bubble disappears
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollPosition)
-        })
-      }, 3000)
-
-      if (isCorrect) {
-        if (!completedSlides.includes(currentSlideIndex)) {
-          setCompletedSlides([...completedSlides, currentSlideIndex])
-          awardPoints(25) // Award points for correct answer
-        }
+      // Add slide to completed slides if not already completed
+      if (!completedSlides.includes(currentSlideIndex)) {
+        setCompletedSlides([...completedSlides, currentSlideIndex])
+        // Award additional points for completing new slide
+        awardPoints(10)
       }
     }
+
+    // Show explanation
+    setShowExplanation(true)
+
+    // Update mascot bubble
+    setMascotBubble({
+      visible: true,
+      isCorrect,
+      message: isCorrect
+        ? "Great job! That's correct! 🎉"
+        : "Don't worry! Learning from mistakes makes us stronger! 💪",
+    })
+
+    // Hide mascot bubble after 3 seconds
+    setTimeout(() => {
+      setMascotBubble((prev) => ({ ...prev, visible: false }))
+    }, 3000)
   }
 
   const handleNextSlide = (e: React.MouseEvent) => {
@@ -543,43 +546,44 @@ export default function CoursePage() {
                       </div>
                       <div className="space-y-3">
                         {course.slides[currentSlideIndex].quiz.options.map((option) => {
-                          const isSelected = selectedAnswer === option
-                          const isCorrect = option === course.slides[currentSlideIndex].quiz.correct_answer
+                          const currentSlide = course.slides[currentSlideIndex]
+                          const isAnswered = currentSlide.userAnswer !== undefined
+                          const isCorrect = option === currentSlide.quiz.correct_answer
+                          const wasSelected = currentSlide.userAnswer === option
 
                           // Determine styling based on state
                           let buttonStyle = {}
                           let icon = null
 
-                          if (showExplanation) {
-                            // After checking answer
+                          if (isAnswered) {
                             if (isCorrect) {
                               // Correct answer is always green
                               buttonStyle = {
-                                backgroundColor: "hsl(var(--secondary))",
+                                backgroundColor: "hsl(142.1 76.2% 36.3%)",
                                 color: "white",
-                                borderColor: "hsl(var(--secondary))",
+                                borderColor: "hsl(142.1 76.2% 36.3%)",
                               }
                               icon = <CheckCircle className="h-5 w-5 text-white" />
-                            } else if (isSelected) {
+                            } else if (wasSelected) {
                               // Wrong selected answer is red
                               buttonStyle = {
-                                backgroundColor: "hsl(var(--destructive))",
+                                backgroundColor: "hsl(0 84.2% 60.2%)",
                                 color: "white",
-                                borderColor: "hsl(var(--destructive))",
+                                borderColor: "hsl(0 84.2% 60.2%)",
                               }
                               icon = <XCircle className="h-5 w-5 text-white" />
                             } else {
                               // Unselected wrong answers are neutral
                               buttonStyle = {
                                 backgroundColor: "transparent",
-                                color: "hsl(var(--foreground))",
+                                color: "hsl(var(--muted-foreground))",
                                 borderColor: "hsl(var(--border))",
                               }
                             }
                           } else {
-                            // Before checking answer
-                            if (isSelected) {
-                              // Selected answer has a distinct style
+                            // Before answering
+                            if (selectedAnswer === option) {
+                              // Currently selected answer
                               buttonStyle = {
                                 backgroundColor: "hsl(var(--primary) / 0.1)",
                                 borderColor: "hsl(var(--primary))",
@@ -587,7 +591,7 @@ export default function CoursePage() {
                                 color: "hsl(var(--primary))",
                               }
                             } else {
-                              // Unselected answers are neutral
+                              // Unselected answers
                               buttonStyle = {
                                 backgroundColor: "transparent",
                                 color: "hsl(var(--foreground))",
@@ -601,8 +605,8 @@ export default function CoursePage() {
                               key={option}
                               className="w-full flex justify-between items-center text-left px-4 py-6 rounded-md border-2 transition-all duration-200 font-body"
                               style={buttonStyle}
-                              onClick={() => !showExplanation && setSelectedAnswer(option)}
-                              disabled={showExplanation}
+                              onClick={() => !isAnswered && setSelectedAnswer(option)}
+                              disabled={isAnswered}
                             >
                               <span>{option}</span>
                               {icon}
@@ -611,7 +615,7 @@ export default function CoursePage() {
                         })}
                       </div>
 
-                      {!showExplanation && (
+                      {!course.slides[currentSlideIndex].userAnswer && (
                         <Button
                           onClick={(e) => handleAnswerSubmit(e)}
                           disabled={!selectedAnswer}
@@ -679,7 +683,7 @@ export default function CoursePage() {
                     {currentSlideIndex < course.slides.length - 1 ? (
                       <Button
                         onClick={(e) => handleNextSlide(e)}
-                        disabled={!completedSlides.includes(currentSlideIndex) && currentSlideIndex !== 0}
+                        disabled={!course?.slides[currentSlideIndex]?.userAnswer}
                         className="bg-primary btn-playful font-body"
                       >
                         Next <ChevronRight className="ml-1 h-4 w-4" />
