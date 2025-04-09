@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Player, type PlayerRef } from "@remotion/player"
 import { ContinuousCourseComposition } from "@/components/custom/remotion/ContinuousCourseComposition"
-import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen } from "lucide-react"
+import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen, Star } from "lucide-react"
 import { QuizSection } from "@/components/custom/QuizSection"
 import { AnimatedMascot } from "@/components/custom/AnimatedMascot"
+import { PointsDisplay } from "@/components/custom/PointsDisplay"
+import { LeaderboardButton } from "@/components/custom/LeaderboardButton"
 import { cn } from "@/lib/utils"
 
 interface Quiz {
@@ -33,12 +35,40 @@ interface CourseContent {
   sections: CourseSection[]
 }
 
+// Mock leaderboard data
+const mockLeaderboardData = [
+  { id: "1", name: "Alex Johnson", points: 1250, rank: 1 },
+  { id: "2", name: "Taylor Swift", points: 980, rank: 2 },
+  { id: "3", name: "Morgan Freeman", points: 875, rank: 3 },
+  { id: "4", name: "Jamie Oliver", points: 720, rank: 4 },
+  { id: "5", name: "Emma Watson", points: 690, rank: 5 },
+  { id: "6", name: "Chris Evans", points: 645, rank: 6 },
+  { id: "7", name: "Zoe Saldana", points: 590, rank: 7 },
+  { id: "8", name: "Tom Holland", points: 540, rank: 8 },
+  { id: "9", name: "Keanu Reeves", points: 510, rank: 9 },
+  { id: "10", name: "Scarlett Johansson", points: 480, rank: 10 },
+]
+
+interface LeaderboardEntry {
+  id: string
+  name: string
+  points: number
+  rank: number
+  isCurrentUser?: boolean
+}
+
 export default function VideoCoursePage() {
   const [currentFrame, setCurrentFrame] = useState(0)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
   const [completedSections, setCompletedSections] = useState<number[]>([])
+  const [points, setPoints] = useState(0)
+  const [recentPoints, setRecentPoints] = useState(0)
+  const [userRank, setUserRank] = useState(11)
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(
+    [...mockLeaderboardData, { id: "user", name: "You", points: 0, rank: 11, isCurrentUser: true }]
+  )
   const [mascotBubble, setMascotBubble] = useState({
     visible: false,
     isCorrect: false,
@@ -154,6 +184,30 @@ export default function VideoCoursePage() {
     }
   }, [])
 
+  const awardPoints = (amount: number) => {
+    setPoints((prev) => prev + amount)
+    setRecentPoints(amount)
+
+    // Update leaderboard
+    setLeaderboardData((prev) => {
+      const updatedData = prev
+        .map((entry) => {
+          if (entry.isCurrentUser) {
+            return { ...entry, points: entry.points + amount }
+          }
+          return entry
+        })
+        .sort((a, b) => b.points - a.points)
+
+      // Recalculate ranks and update user rank
+      const newData = updatedData.map((entry, i) => ({ ...entry, rank: i + 1 }))
+      const newUserRank = newData.findIndex((entry) => entry.isCurrentUser) + 1
+      setUserRank(newUserRank)
+
+      return newData
+    })
+  }
+
   const handleAnswerSubmit = () => {
     if (!selectedAnswer || !courseContent) return
 
@@ -166,9 +220,17 @@ export default function VideoCoursePage() {
     updatedContent.sections[currentSectionIndex].isCorrect = isCorrect
     setCourseContent(updatedContent)
 
-    if (isCorrect && !completedSections.includes(currentSectionIndex)) {
-      setCompletedSections([...completedSections, currentSectionIndex])
+    if (isCorrect) {
+      // Award points for correct answer
+      awardPoints(25)
+
+      if (!completedSections.includes(currentSectionIndex)) {
+        setCompletedSections([...completedSections, currentSectionIndex])
+        // Award additional points for completing new section
+        awardPoints(10)
+      }
     }
+
     setShowExplanation(true)
 
     // Update mascot bubble
@@ -189,7 +251,7 @@ export default function VideoCoursePage() {
   const jumpToSection = (sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < courseContent.sections.length) {
       setCurrentSectionIndex(sectionIndex)
-      setCurrentFrame(sectionIndex * sectionDuration)
+      setCurrentFrame(sectionIndex * 450)
       setSelectedAnswer(null)
       setShowExplanation(false)
     }
@@ -222,17 +284,24 @@ export default function VideoCoursePage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8">
+
       <div className="space-y-6">
         <Card className="border-2 border-primary/20 shadow-lg rounded-2xl overflow-hidden">
           <CardHeader className="bg-primary/5 border-b border-primary/10">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl md:text-3xl font-heading">{courseContent.title}</CardTitle>
                 <CardDescription className="text-base mt-2 font-body">{courseContent.description}</CardDescription>
               </div>
-              <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                <CheckCircle className="h-4 w-4 mr-1 text-yellow-300" />
-                {completedSections.length} / {courseContent.sections.length} completed
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-body">
+                  {completedSections.length} / {courseContent.sections.length} completed
+                </div>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Star className="h-4 w-4 mr-1 text-primary" />
+                  <span>{points} points</span>
+                </Button>
+                <LeaderboardButton entries={leaderboardData} courseTitle={courseContent.title} userRank={userRank} />
               </div>
             </div>
           </CardHeader>
