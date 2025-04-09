@@ -2,9 +2,8 @@
 
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
-import { Sparkles, BookOpen, Brain } from "lucide-react"
+import { Sparkles, BookOpen } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Mascot } from "@/components/custom/Mascot"
 import { motion } from "framer-motion"
 
 export function LoadingState() {
@@ -43,61 +42,50 @@ export function LoadingState() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
     >
-      <Card className="w-full border-2 border-primary/20 bg-white shadow-xl rounded-3xl overflow-hidden">
-        <CardContent className="flex flex-col items-center justify-center p-8 space-y-6">
-          <div className="w-full max-w-xl space-y-6">
-            <div className="flex items-center justify-center mb-4">
-              <div className="bg-gradient-to-r from-primary to-secondary rounded-full p-3 mr-3">
-                <Sparkles className="h-8 w-8 text-white" />
+      <Card className="w-full max-w-3xl border border-primary/20 bg-white shadow-lg rounded-xl overflow-hidden">
+        <CardContent className="p-0">
+          <div className="flex flex-col md:flex-row">
+            {/* Video section - larger and on the left */}
+            <div className="w-full md:w-1/2 bg-primary/5 flex items-center justify-center p-6">
+              <div className="relative">
+                <video
+                  className="rounded-xl w-full max-w-[280px] border-4 border-primary/10 shadow-lg"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/videos/mascot.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <div className="absolute -bottom-3 right-0 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
+                  <Sparkles className="h-3 w-3 inline mr-1" />
+                  Creating...
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-primary">Miss Nova is working</h3>
             </div>
 
-            <Progress
-              value={progress}
-              className="w-full h-4 bg-gray-100 rounded-full overflow-hidden"
-              indicatorClassName="bg-gradient-to-r from-primary via-secondary to-green-400"
-            />
+            {/* Content section - on the right */}
+            <div className="w-full md:w-1/2 p-6">
+              <div className="flex flex-col h-full justify-center">
+                <h3 className="text-2xl font-bold text-primary mb-2">Miss Nova is working</h3>
+                <p className="text-base font-medium text-primary/80 mb-6">{message}</p>
 
-            <div className="text-center space-y-2">
-              <p className="text-lg font-medium text-secondary">{message}</p>
-              <p className="text-sm text-muted-foreground">
-                Miss Nova is crafting a personalized learning experience just for you
-              </p>
-            </div>
+                <div className="w-full mb-4">
+                  <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                    <span>Progress</span>
+                    <span>{Math.round(progress)}%</span>
+                  </div>
+                  <Progress value={progress} className="h-2 bg-primary/10" indicatorClassName="bg-primary" />
+                </div>
 
-            <div className="flex justify-center space-x-4 pt-4">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    y: [0, -15, 0],
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: i * 0.2,
-                  }}
-                  className="w-4 h-4 rounded-full bg-gradient-to-r from-primary to-secondary"
-                />
-              ))}
-            </div>
-
-            <div className="flex justify-center items-center mt-4 space-x-6">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                <BookOpen className="h-8 w-8 text-primary" />
-              </motion.div>
-              <Mascot width={80} height={80} />
-              <motion.div
-                animate={{ rotate: [0, -10, 10, 0] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                <Brain className="h-8 w-8 text-secondary" />
-              </motion.div>
+                <p className="text-sm text-muted-foreground flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2 text-primary/60" />
+                  Creating your personalized learning experience
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -105,4 +93,3 @@ export function LoadingState() {
     </motion.div>
   )
 }
-

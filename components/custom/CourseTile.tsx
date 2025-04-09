@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Star, ArrowRight } from "lucide-react"
 
-type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels'
-type Category = 'Technology' | 'Science' | 'Business' | 'Arts' | 'Health' | 'Language' | 'Mathematics' | 'History' | 'Lifestyle' | 'Other'
+export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels'
+export type Category = 'Technology' | 'Science' | 'Business' | 'Arts' | 'Health' | 'Language' | 'Mathematics' | 'History' | 'Lifestyle' | 'Other'
 
 // Difficulty levels with emojis
 const difficultyEmojis: Record<DifficultyLevel, string> = {

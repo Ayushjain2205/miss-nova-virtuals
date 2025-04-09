@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, ChevronRight } from "lucide-react"
 import { LoadingState } from "@/components/custom/LoadingState"
-import { ConfettiEffect } from "@/components/custom/ConfettiEffect"
 import { motion } from "framer-motion"
 import { CourseTile } from "@/components/custom/CourseTile"
+import type { Category } from "@/components/custom/CourseTile"
 
 interface Quiz {
   question: string
@@ -24,18 +24,15 @@ interface Slide {
   quiz: Quiz
 }
 
-type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels'
-type Category = 'Technology' | 'Science' | 'Business' | 'Arts' | 'Health' | 'Language' | 'Mathematics' | 'History' | 'Lifestyle' | 'Other'
-
 interface Course {
   title: string
-  difficulty: DifficultyLevel
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | "All Levels"
   completion: number
   icon: string
   tags: string[]
+  category?: Category
   slides?: Slide[]
   creator?: string
-  category?: Category
 }
 
 // Sample course data
@@ -46,6 +43,7 @@ const popularCourses: Course[] = [
     completion: 82,
     icon: "💻",
     tags: ["Programming", "Web"],
+    category: "Technology",
   },
   {
     title: "Climate Change Basics",
@@ -53,6 +51,7 @@ const popularCourses: Course[] = [
     completion: 76,
     icon: "🌍",
     tags: ["Science", "Environment"],
+    category: "Science",
   },
   {
     title: "Digital Marketing 101",
@@ -60,6 +59,7 @@ const popularCourses: Course[] = [
     completion: 84,
     icon: "📱",
     tags: ["Marketing", "Business"],
+    category: "Business",
   },
   {
     title: "Introduction to Psychology",
@@ -67,6 +67,7 @@ const popularCourses: Course[] = [
     completion: 79,
     icon: "🧠",
     tags: ["Psychology", "Science"],
+    category: "Science",
   },
   {
     title: "Web Design Fundamentals",
@@ -74,6 +75,7 @@ const popularCourses: Course[] = [
     completion: 68,
     icon: "🎨",
     tags: ["Design", "Web"],
+    category: "Arts",
   },
   {
     title: "Data Science Essentials",
@@ -81,6 +83,7 @@ const popularCourses: Course[] = [
     completion: 72,
     icon: "📊",
     tags: ["Data", "Programming"],
+    category: "Technology",
   },
 ]
 
@@ -184,7 +187,6 @@ export default function Home() {
   const [prompt, setPrompt] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
-  const [showConfetti, setShowConfetti] = useState<boolean>(false)
   const [motivationalMessage, setMotivationalMessage] = useState<string>("Let's learn something new!")
 
   const generateCourse = async () => {
@@ -196,7 +198,6 @@ export default function Home() {
     try {
       setIsLoading(true)
       setError("")
-      setShowConfetti(true)
 
       // Add cache-busting query parameter and proper error handling
       const response = await fetch(`/api/mock-course?topic=${encodeURIComponent(prompt)}&t=${Date.now()}`, {
@@ -222,11 +223,10 @@ export default function Home() {
       // Redirect to the course page
       setTimeout(() => {
         router.push("/course")
-      }, 1000) // Delay to show confetti
+      }, 1000)
     } catch (err) {
       console.error("Error generating course:", err)
       setError(err instanceof Error ? err.message : "Failed to generate course")
-      setShowConfetti(false)
     } finally {
       setTimeout(() => {
         setIsLoading(false)
@@ -236,7 +236,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-4 md:p-8 bg-background">
-      {showConfetti && <ConfettiEffect />}
+      {isLoading && <LoadingState />}
 
       <div className="max-w-6xl mx-auto">
         {/* Hero section with mascot and speech bubble */}
@@ -248,15 +248,7 @@ export default function Home() {
             transition={{ duration: 0.4 }}
           >
             <div className="relative">
-              <video
-                className="rounded-full "
-                width={320}
-                height={320}
-                autoPlay
-                loop
-                muted
-                playsInline
-              >
+              <video className="rounded-full " width={320} height={320} autoPlay loop muted playsInline>
                 <source src="/videos/mascot.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
@@ -348,7 +340,7 @@ export default function Home() {
         {/* Loading state */}
         {isLoading && <LoadingState />}
 
-             {/* Popular courses section - Marquee Effect */}
+        {/* Popular courses section - Marquee Effect */}
         <motion.div
           className="py-12"
           initial={{ y: 20, opacity: 0 }}
@@ -373,7 +365,7 @@ export default function Home() {
             >
               {/* Double the courses to create seamless loop */}
               {[...popularCourses, ...popularCourses].map((course, index) => (
-                <div key={`course-${index}`} className="w-[300px] flex-shrink-0">
+                <div key={`course-${index}`} className="w-[300px] h-full flex-shrink-0">
                   <CourseTile
                     title={course.title}
                     difficulty={course.difficulty}
@@ -381,6 +373,7 @@ export default function Home() {
                     icon={course.icon}
                     creator={course.creator}
                     tags={course.tags}
+                    category={course.category}
                     slides={course.slides}
                   />
                 </div>
@@ -406,4 +399,3 @@ export default function Home() {
     </main>
   )
 }
-

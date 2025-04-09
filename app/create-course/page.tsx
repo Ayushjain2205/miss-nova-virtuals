@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Paperclip, FileText, X, Search, Sparkles } from "lucide-react"
 import { LoadingState } from "@/components/custom/LoadingState"
-import { ConfettiEffect } from "@/components/custom/ConfettiEffect"
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 
@@ -50,7 +49,6 @@ export default function CreateCoursePage() {
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
-  const [showConfetti, setShowConfetti] = useState<boolean>(false)
   const [motivationalMessage, setMotivationalMessage] = useState<string>("Let's create your course!")
 
   // Handle file selection
@@ -83,7 +81,6 @@ export default function CreateCoursePage() {
     try {
       setIsLoading(true)
       setError("")
-      setShowConfetti(true)
 
       // Create FormData for file upload
       const formData = new FormData()
@@ -127,11 +124,10 @@ export default function CreateCoursePage() {
       // Redirect to the course page
       setTimeout(() => {
         router.push("/course")
-      }, 1000) // Delay to show confetti
+      }, 1000)
     } catch (err) {
       console.error("Error generating course:", err)
       setError(err instanceof Error ? err.message : "Failed to generate course")
-      setShowConfetti(false)
     } finally {
       setTimeout(() => {
         setIsLoading(false)
@@ -141,7 +137,7 @@ export default function CreateCoursePage() {
 
   return (
     <main className="min-h-screen p-4 md:p-8 bg-background">
-      {showConfetti && <ConfettiEffect />}
+      {isLoading && <LoadingState />}
 
       <div className="max-w-6xl mx-auto">
         {/* Hero section with mascot and speech bubble - similar to home page */}
@@ -331,9 +327,6 @@ export default function CreateCoursePage() {
             </div>
           </motion.div>
         </div>
-
-        {/* Loading state */}
-        {isLoading && <LoadingState />}
       </div>
     </main>
   )
