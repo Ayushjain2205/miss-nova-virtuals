@@ -28,6 +28,15 @@ import { motion, AnimatePresence } from "framer-motion"
 import { PointsDisplay } from "@/components/custom/PointsDisplay"
 import { LeaderboardButton } from "@/components/custom/LeaderboardButton"
 import { Certificate } from "@/components/custom/Certificate"
+import { Mascot } from "@/components/custom/Mascot"
+
+interface LeaderboardEntry {
+  id: string
+  name: string
+  points: number
+  rank: number
+  isCurrentUser?: boolean
+}
 
 interface Quiz {
   question: string
@@ -75,11 +84,16 @@ export default function CoursePage() {
   const [showExplanation, setShowExplanation] = useState(false)
   const [showJourneyMap, setShowJourneyMap] = useState(true)
   const [showCertificate, setShowCertificate] = useState(false)
+  const [mascotBubble, setMascotBubble] = useState({
+    visible: false,
+    isCorrect: false,
+    message: "",
+  })
 
   // Gamification state
   const [points, setPoints] = useState(0)
   const [recentPoints, setRecentPoints] = useState(0)
-  const [leaderboardData, setLeaderboardData] = useState(mockLeaderboardData)
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(mockLeaderboardData)
   const [userRank, setUserRank] = useState(0)
   const [level, setLevel] = useState(1)
   const [userName, setUserName] = useState("Your Name")
@@ -169,18 +183,31 @@ export default function CoursePage() {
   }
 
   const handleAnswerSubmit = () => {
-    if (selectedAnswer) {
+    console.log('handleAnswerSubmit called');
+    if (selectedAnswer && course) {
       setShowExplanation(true)
 
-      // Mark slide as completed if answer is correct
-      if (
-        selectedAnswer === course?.slides[currentSlideIndex].quiz.correct_answer &&
-        !completedSlides.includes(currentSlideIndex)
-      ) {
-        setCompletedSlides([...completedSlides, currentSlideIndex])
+      const isCorrect = selectedAnswer === course.slides[currentSlideIndex].quiz.correct_answer;
+      
+      // Show mascot bubble feedback
+      setMascotBubble({
+        visible: true,
+        isCorrect,
+        message: isCorrect 
+          ? "Great job! That's the correct answer!"
+          : "Not quite right. Let's review the explanation.",
+      })
 
-        // Award points for correct answer
-        awardPoints(25)
+      // Hide mascot bubble after 5 seconds
+      setTimeout(() => {
+        setMascotBubble((prev) => ({ ...prev, visible: false }))
+      }, 5000)
+
+      if (isCorrect) {
+        if (!completedSlides.includes(currentSlideIndex)) {
+          setCompletedSlides([...completedSlides, currentSlideIndex])
+          awardPoints(25) // Award points for correct answer
+        }
       }
     }
   }
@@ -262,7 +289,62 @@ export default function CoursePage() {
   if (!course) return null
 
   return (
-    <main className="min-h-screen p-4 md:p-8 bg-background font-body">
+    <main className="container max-w-7xl mx-auto p-4 md:p-6 min-h-screen relative">
+      {/* Mascot Bubble */}
+      <AnimatePresence mode="wait">
+        {mascotBubble.visible && (
+          <motion.div
+            className="fixed bottom-10 left-10 z-[9999] pointer-events-none"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 100,
+              damping: 15,
+              duration: 1.5,
+            }}
+            style={{
+              filter: "drop-shadow(0px 5px 15px rgba(0,0,0,0.25))",
+            }}
+          >
+            <div className="relative">
+              {/* Speech bubble with tail */}
+              <div
+                className={`
+                  p-4 rounded-2xl max-w-xs relative
+                  ${mascotBubble.isCorrect ? "bg-green-500 text-white" : "bg-red-500 text-white"}
+                `}
+                style={{
+                  borderRadius: "20px",
+                }}
+              >
+                {/* Tail */}
+                <div
+                  className={`
+                    absolute -bottom-4 left-10 w-8 h-8 transform rotate-45
+                    ${mascotBubble.isCorrect ? "bg-green-500" : "bg-red-500"}
+                  `}
+                ></div>
+
+                {/* Content */}
+                <div className="relative z-10">
+                  <p className="font-bold text-lg mb-1">
+                    {mascotBubble.isCorrect ? "Great job! 🎉" : "Not quite right! 🤔"}
+                  </p>
+                  <p>{mascotBubble.message}</p>
+                </div>
+              </div>
+
+              {/* Mascot */}
+              <div className="absolute -bottom-10 left-8 w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                <Mascot width={80} height={80} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-6xl mx-auto">
         {/* Points Display */}
         <div className="mb-6">
