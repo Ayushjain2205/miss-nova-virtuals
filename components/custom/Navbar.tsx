@@ -66,10 +66,12 @@ export function Navbar() {
         {/* Create Course Button */}
         <div className="hidden md:flex items-center gap-4">
           <ConnectButton client={client} theme="light" chain={chain} />
-          <Button className="btn-playful font-body bg-primary text-white hover:bg-primary/90" size="sm">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Create Course
-          </Button>
+          <Link href="/create-course" className="w-full">
+            <Button className="w-full btn-playful font-body" size="sm">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Create Course
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
