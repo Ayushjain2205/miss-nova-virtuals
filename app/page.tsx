@@ -8,7 +8,6 @@ import { Search, ChevronRight } from "lucide-react"
 import { LoadingState } from "@/components/custom/LoadingState"
 import { motion } from "framer-motion"
 import { CourseTile } from "@/components/custom/CourseTile"
-import type { Category } from "@/components/custom/CourseTile"
 
 interface Quiz {
   question: string
@@ -30,9 +29,10 @@ interface Course {
   completion: number
   icon: string
   tags: string[]
-  category?: Category
+  category?: string
   slides?: Slide[]
   creator?: string
+  type?: "slides" | "video"
 }
 
 // Sample course data
@@ -44,6 +44,7 @@ const popularCourses: Course[] = [
     icon: "💻",
     tags: ["Programming", "Web"],
     category: "Technology",
+    type: "slides",
   },
   {
     title: "Climate Change Basics",
@@ -52,6 +53,7 @@ const popularCourses: Course[] = [
     icon: "🌍",
     tags: ["Science", "Environment"],
     category: "Science",
+    type: "video",
   },
   {
     title: "Digital Marketing 101",
@@ -60,6 +62,7 @@ const popularCourses: Course[] = [
     icon: "📱",
     tags: ["Marketing", "Business"],
     category: "Business",
+    type: "slides",
   },
   {
     title: "Introduction to Psychology",
@@ -68,6 +71,7 @@ const popularCourses: Course[] = [
     icon: "🧠",
     tags: ["Psychology", "Science"],
     category: "Science",
+    type: "video",
   },
   {
     title: "Web Design Fundamentals",
@@ -76,6 +80,7 @@ const popularCourses: Course[] = [
     icon: "🎨",
     tags: ["Design", "Web"],
     category: "Arts",
+    type: "slides",
   },
   {
     title: "Data Science Essentials",
@@ -84,6 +89,7 @@ const popularCourses: Course[] = [
     icon: "📊",
     tags: ["Data", "Programming"],
     category: "Technology",
+    type: "video",
   },
 ]
 
@@ -375,6 +381,7 @@ export default function Home() {
                     tags={course.tags}
                     category={course.category}
                     slides={course.slides}
+                    type={course.type}
                   />
                 </div>
               ))}

@@ -10,103 +10,153 @@ import { Mascot } from "@/components/custom/Mascot"
 import { Search, Filter, Sparkles, TrendingUp, BookOpen } from "lucide-react"
 import { motion } from "framer-motion"
 
+interface Quiz {
+  question: string
+  options: string[]
+  correct_answer: string
+  explanation: string
+}
+
+interface Slide {
+  slide_number: number
+  title: string
+  content: string
+  quiz: Quiz
+}
+
+interface Course {
+  title: string
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | "All Levels"
+  completion: number
+  icon: string
+  tags: string[]
+  category?: "Technology" | "Science" | "Business" | "Arts" | "Health" | "Language" | "Mathematics" | "History" | "Lifestyle" | "Other"
+  slides?: Slide[]
+  creator?: string
+  type?: "slides" | "video"
+}
+
 // Sample course data - in a real app, this would come from an API
-const allCourses = [
+const allCourses: Course[] = [
   {
     title: "Introduction to JavaScript",
     difficulty: "Beginner",
     completion: 82,
     icon: "💻",
+    creator: "Prof. Alex Chen",
     tags: ["Programming", "Web"],
     category: "Technology",
+    type: "slides",
   },
   {
     title: "Climate Change Basics",
     difficulty: "Beginner",
     completion: 76,
     icon: "🌍",
+    creator: "Dr. Maya Johnson",
     tags: ["Science", "Environment"],
     category: "Science",
+    type: "video",
   },
   {
     title: "Digital Marketing 101",
     difficulty: "Beginner",
     completion: 84,
     icon: "📱",
+    creator: "Sarah Williams",
     tags: ["Marketing", "Business"],
     category: "Business",
+    type: "slides",
   },
   {
     title: "Introduction to Psychology",
     difficulty: "Beginner",
     completion: 79,
     icon: "🧠",
+    creator: "Dr. James Peterson",
     tags: ["Psychology", "Science"],
     category: "Science",
+    type: "video",
   },
   {
     title: "Web Design Fundamentals",
     difficulty: "Intermediate",
     completion: 68,
     icon: "🎨",
+    creator: "Emma Rodriguez",
     tags: ["Design", "Web"],
-    category: "Technology",
+    category: "Arts",
+    type: "slides",
   },
   {
     title: "Data Science Essentials",
     difficulty: "Intermediate",
     completion: 72,
     icon: "📊",
+    creator: "Michael Thompson",
     tags: ["Data", "Programming"],
     category: "Technology",
+    type: "video",
   },
   {
     title: "Creative Writing Workshop",
     difficulty: "All Levels",
     completion: 88,
     icon: "✍️",
+    creator: "Olivia Parker",
     tags: ["Writing", "Arts"],
     category: "Arts",
+    type: "slides",
   },
   {
     title: "Personal Finance Basics",
     difficulty: "Beginner",
     completion: 91,
     icon: "💰",
+    creator: "Robert Garcia",
     tags: ["Finance", "Life Skills"],
     category: "Business",
+    type: "slides",
   },
   {
     title: "Introduction to Astronomy",
     difficulty: "Beginner",
     completion: 85,
     icon: "🔭",
+    creator: "Dr. Samantha Lee",
     tags: ["Space", "Science"],
     category: "Science",
+    type: "video",
   },
   {
     title: "Healthy Cooking Fundamentals",
     difficulty: "All Levels",
     completion: 77,
     icon: "🥗",
+    creator: "Chef Daniel Kim",
     tags: ["Cooking", "Health"],
     category: "Lifestyle",
+    type: "slides",
   },
   {
     title: "Yoga for Beginners",
     difficulty: "Beginner",
     completion: 94,
     icon: "🧘",
+    creator: "Sophia Martinez",
     tags: ["Fitness", "Wellness"],
-    category: "Lifestyle",
+    category: "Health",
+    type: "video",
   },
   {
     title: "Photography Basics",
     difficulty: "Beginner",
     completion: 81,
     icon: "📷",
+    creator: "David Wilson",
     tags: ["Photography", "Arts"],
     category: "Arts",
+    type: "slides",
   },
 ]
 
@@ -140,7 +190,7 @@ allCourses.forEach((course) => {
 })
 
 // Categories for filtering
-const categories = ["All", "Technology", "Science", "Business", "Arts", "Lifestyle"]
+const categories = ["All", "Technology", "Science", "Business", "Arts", "Lifestyle", "Health"]
 
 // Difficulty levels for filtering
 const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"]
@@ -337,7 +387,11 @@ export default function ExplorePage() {
   )
 }
 
-function CourseGrid({ courses }) {
+interface CourseGridProps {
+  courses: Course[]
+}
+
+function CourseGrid({ courses }: CourseGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {courses.map((course, index) => (
@@ -346,18 +400,21 @@ function CourseGrid({ courses }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
+          className="h-full"
         >
           <CourseTile
             title={course.title}
             difficulty={course.difficulty}
             completion={course.completion}
             icon={course.icon}
+            creator={course.creator}
+            category={course.category}
             tags={course.tags}
             slides={course.slides}
+            type={course.type}
           />
         </motion.div>
       ))}
     </div>
   )
 }
-

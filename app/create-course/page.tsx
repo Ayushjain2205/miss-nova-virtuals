@@ -34,6 +34,12 @@ const difficultyLevels = [
   { value: "all-levels", label: "All Levels", emoji: "🌎" },
 ]
 
+// Add a new courseTypes constant after the difficultyLevels
+const courseTypes = [
+  { value: "slides", label: "Slides", emoji: "📑" },
+  { value: "video", label: "Video", emoji: "🎬" },
+]
+
 export default function CreateCoursePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -50,6 +56,9 @@ export default function CreateCoursePage() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
   const [motivationalMessage, setMotivationalMessage] = useState<string>("Let's create your course!")
+
+  // Update the state section to include courseType with "slides" as default
+  const [courseType, setCourseType] = useState<string>("slides")
 
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,10 +80,15 @@ export default function CreateCoursePage() {
     }
   }
 
-  // Generate course
+  // Update the generateCourse function to check for required fields
   const generateCourse = async () => {
     if (!prompt.trim()) {
       setError("Please enter a topic or description")
+      return
+    }
+
+    if (!category) {
+      setError("Please select a category")
       return
     }
 
@@ -87,6 +101,7 @@ export default function CreateCoursePage() {
       formData.append("prompt", prompt)
       formData.append("category", category)
       formData.append("difficulty", difficulty)
+      formData.append("courseType", courseType)
 
       // Add files to FormData
       files.forEach((file) => {
@@ -114,9 +129,10 @@ export default function CreateCoursePage() {
         throw new Error(data.error)
       }
 
-      // Add category and difficulty to the course data
-      data.category = category || "general"
-      data.difficulty = difficulty || "beginner"
+      // Add category, difficulty and courseType to the course data
+      data.category = category
+      data.difficulty = difficulty
+      data.courseType = courseType
 
       // Store the course data in localStorage
       localStorage.setItem("currentCourse", JSON.stringify(data))
@@ -224,11 +240,12 @@ export default function CreateCoursePage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Add the course type select in the grid section with category and difficulty */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Enhanced category select with emojis */}
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger className="rounded-xl border-2 border-muted">
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder="Select a category *" />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((cat) => (
@@ -258,9 +275,26 @@ export default function CreateCoursePage() {
                       ))}
                     </SelectContent>
                   </Select>
+
+                  {/* Course type select with emojis */}
+                  <Select value={courseType} onValueChange={setCourseType}>
+                    <SelectTrigger className="rounded-xl border-2 border-muted">
+                      <SelectValue placeholder="Select course type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courseTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value} className="flex items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{type.emoji}</span>
+                            <span>{type.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Selected category and difficulty badges */}
+                {/* Update the badges section to include course type */}
                 <div className="flex flex-wrap gap-2">
                   {category && (
                     <Badge variant="outline" className="bg-primary/5 border-primary/20 text-primary">
@@ -272,6 +306,12 @@ export default function CreateCoursePage() {
                     <Badge variant="outline" className="bg-secondary/5 border-secondary/20 text-secondary">
                       {difficultyLevels.find((d) => d.value === difficulty)?.emoji}{" "}
                       {difficultyLevels.find((d) => d.value === difficulty)?.label}
+                    </Badge>
+                  )}
+                  {courseType && (
+                    <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-600">
+                      {courseTypes.find((t) => t.value === courseType)?.emoji}{" "}
+                      {courseTypes.find((t) => t.value === courseType)?.label}
                     </Badge>
                   )}
                   {files.length > 0 && (
