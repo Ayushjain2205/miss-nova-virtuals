@@ -246,8 +246,9 @@ export default function CoursePage() {
         window.scrollTo(0, scrollPosition)
       })
 
-      // Award points for advancing to next slide
-      if (!completedSlides.includes(currentSlideIndex + 1)) {
+      // Mark current slide as completed and award points
+      if (!completedSlides.includes(currentSlideIndex)) {
+        setCompletedSlides([...completedSlides, currentSlideIndex])
         awardPoints(10)
       }
     }
@@ -265,6 +266,8 @@ export default function CoursePage() {
   const getNodeStatus = (index: number) => {
     if (completedSlides.includes(index)) {
       return "completed"
+    } else if (index === currentSlideIndex) {
+      return "current"
     } else if (index === 0 || completedSlides.includes(index - 1)) {
       return "available"
     } else {
@@ -413,7 +416,7 @@ export default function CoursePage() {
                         <div
                           className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-1000"
                           style={{
-                            width: `${(completedSlides.length / course.slides.length) * 100}%`,
+                            width: `${((currentSlideIndex) / (course.slides.length - 1)) * 100}%`,
                             zIndex: 0,
                           }}
                         ></div>
@@ -439,13 +442,10 @@ export default function CoursePage() {
                                   {/* Node circle */}
                                   <div
                                     className={`flex items-center justify-center rounded-full w-10 h-10 text-white shadow-md
-                                      ${
-                                        nodeStatus === "completed"
-                                          ? "bg-secondary"
-                                          : nodeStatus === "available"
-                                            ? "bg-primary"
-                                            : "bg-gray-300"
-                                      }`}
+                                      ${nodeStatus === "completed" ? "bg-secondary" :
+                                         nodeStatus === "current" ? "bg-primary ring-4 ring-primary/30" :
+                                         nodeStatus === "available" ? "bg-primary" :
+                                         "bg-gray-300"}`}
                                     style={{
                                       boxShadow:
                                         currentSlideIndex === index
