@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress"
 import { Player, type PlayerRef } from "@remotion/player"
 import { ContinuousCourseComposition } from "@/components/custom/remotion/ContinuousCourseComposition"
 import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { QuizSection } from "@/components/custom/QuizSection"
+import { AnimatedMascot } from "@/components/custom/AnimatedMascot"
 import { cn } from "@/lib/utils"
 
 interface Quiz {
@@ -290,128 +291,23 @@ export default function VideoCoursePage() {
 
                     <div className="space-y-6">
                       <div className="text-lg font-bold font-heading">{currentSection.quiz.question}</div>
-                      <div className="space-y-3">
-                        {currentSection.quiz.options.map((option) => {
-                          const isAnswered = currentSection.userAnswer !== undefined
-                          const isCorrect = option === currentSection.quiz.correct_answer
-                          const wasSelected = currentSection.userAnswer === option
-
-                          // Determine styling based on state
-                          let buttonStyle = {}
-                          let icon = null
-
-                          if (isAnswered) {
-                            if (isCorrect) {
-                              // Correct answer is always green
-                              buttonStyle = {
-                                backgroundColor: "hsl(142.1 76.2% 36.3%)",
-                                color: "white",
-                                borderColor: "hsl(142.1 76.2% 36.3%)",
-                              }
-                              icon = <CheckCircle className="h-5 w-5 text-white" />
-                            } else if (wasSelected) {
-                              // Wrong selected answer is red
-                              buttonStyle = {
-                                backgroundColor: "hsl(0 84.2% 60.2%)",
-                                color: "white",
-                                borderColor: "hsl(0 84.2% 60.2%)",
-                              }
-                              icon = <XCircle className="h-5 w-5 text-white" />
-                            } else {
-                              // Unselected wrong answers are neutral
-                              buttonStyle = {
-                                backgroundColor: "transparent",
-                                color: "hsl(var(--muted-foreground))",
-                                borderColor: "hsl(var(--border))",
-                              }
-                            }
-                          } else {
-                            // Before answering
-                            if (selectedAnswer === option) {
-                              // Currently selected answer
-                              buttonStyle = {
-                                backgroundColor: "hsl(var(--primary) / 0.1)",
-                                borderColor: "hsl(var(--primary))",
-                                borderWidth: "2px",
-                                color: "hsl(var(--primary))",
-                              }
-                            } else {
-                              // Unselected answers
-                              buttonStyle = {
-                                backgroundColor: "transparent",
-                                color: "hsl(var(--foreground))",
-                                borderColor: "hsl(var(--border))",
-                              }
-                            }
-                          }
-
-                          return (
-                            <button
-                              key={option}
-                              className="w-full flex justify-between items-center text-left px-4 py-6 rounded-md border-2 transition-all duration-200 font-body"
-                              style={buttonStyle}
-                              onClick={() => !isAnswered && setSelectedAnswer(option)}
-                              disabled={isAnswered}
-                            >
-                              <span>{option}</span>
-                              {icon}
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                      {!currentSection.userAnswer && (
-                        <Button
-                          onClick={handleAnswerSubmit}
-                          disabled={!selectedAnswer}
-                          className="w-full bg-secondary hover:bg-secondary/90 text-white py-6 font-body"
-                        >
-                          Check Answer
-                        </Button>
-                      )}
-
-                      {showExplanation && (
-                        <Card className="border-2 border-primary/20 bg-primary/5 rounded-xl">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center font-heading">
-                              <Award className="h-5 w-5 mr-2 text-secondary" />
-                              Explanation
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="font-body">{currentSection.quiz.explanation}</p>
-                          </CardContent>
-                        </Card>
-                      )}
+                      <QuizSection
+                        question={currentSection.quiz.question}
+                        options={currentSection.quiz.options}
+                        correctAnswer={currentSection.quiz.correct_answer}
+                        explanation={currentSection.quiz.explanation}
+                        userAnswer={currentSection.userAnswer}
+                        selectedAnswer={selectedAnswer}
+                        showExplanation={showExplanation}
+                        onAnswerSelect={setSelectedAnswer}
+                        onAnswerSubmit={handleAnswerSubmit}
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Mascot Video */}
-              <AnimatePresence>
-                {mascotBubble.visible && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 100 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 100 }}
-                    className="fixed bottom-0 right-8 z-50"
-                  >
-                    <div className="w-48 h-48 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm border-2 border-white/20 shadow-lg">
-                      <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="w-full h-full object-contain"
-                        style={{ transform: 'scale(1)' }}
-                      >
-                        <source src="/videos/mascot.mp4" type="video/mp4" />
-                      </video>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <AnimatedMascot visible={mascotBubble.visible} />
 
               <div className="flex justify-between gap-4">
                 <Button

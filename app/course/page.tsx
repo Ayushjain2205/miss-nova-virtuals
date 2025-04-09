@@ -28,6 +28,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { PointsDisplay } from "@/components/custom/PointsDisplay"
 import { LeaderboardButton } from "@/components/custom/LeaderboardButton"
 import { Certificate } from "@/components/custom/Certificate"
+import { QuizSection } from "@/components/custom/QuizSection"
+import { AnimatedMascot } from "@/components/custom/AnimatedMascot"
 // Removed Mascot import as we're using video directly
 
 interface LeaderboardEntry {
@@ -184,8 +186,7 @@ export default function CoursePage() {
     })
   }
 
-  const handleAnswerSubmit = (e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleAnswerSubmit = () => {
     if (!selectedAnswer || !course) return
 
     const currentQuiz = course.slides[currentSlideIndex].quiz
@@ -320,27 +321,26 @@ export default function CoursePage() {
       <AnimatePresence mode="wait">
         {mascotBubble.visible && (
           <motion.div
-            className="fixed bottom-10 left-10 z-[9999] pointer-events-none"
-            initial={{ y: 100, opacity: 0, scale: 0.8 }}
-            animate={{ y: -50, opacity: 1, scale: 1 }}
-            exit={{ y: -150, opacity: 0 }}
+            className="fixed z-50"
+            initial={{ opacity: 0, scale: 0.5, left: "2rem", bottom: "-4rem" }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              left: ["2rem", "4rem", "2rem", "4rem"],
+              bottom: "100vh",
+            }}
+            exit={{ opacity: 0, scale: 0 }}
             transition={{
-              duration: 2,
-              ease: "easeOut"
+              duration: 4,
+              ease: "easeOut",
+              left: {
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear"
+              }
             }}
           >
-            <div className="w-48 h-48 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm border-2 border-white/20 shadow-lg">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-contain"
-                style={{ transform: 'scale(1)' }}
-              >
-                <source src="/videos/mascot.mp4" type="video/mp4" />
-              </video>
-            </div>
+            <AnimatedMascot visible={mascotBubble.visible} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -356,18 +356,18 @@ export default function CoursePage() {
           <CardHeader className="bg-primary/5 border-b border-primary/10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl md:text-3xl font-heading">{course.title}</CardTitle>
-                <CardDescription className="text-base mt-2 font-body">{course.description}</CardDescription>
+                <CardTitle className="text-2xl md:text-3xl font-heading">{course?.title}</CardTitle>
+                <CardDescription className="text-base mt-2 font-body">{course?.description}</CardDescription>
               </div>
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-body">
-                  {completedSlides.length} / {course.total_slides} completed
+                  {completedSlides.length} / {course?.total_slides} completed
                 </div>
                 <Button variant="outline" size="sm" className="flex items-center gap-1">
                   <Star className="h-4 w-4 mr-1 text-primary" />
                   <span>{points} points</span>
                 </Button>
-                <LeaderboardButton entries={leaderboardData} courseTitle={course.title} userRank={userRank} />
+                <LeaderboardButton entries={leaderboardData} courseTitle={course?.title ?? ""} userRank={userRank} />
                 <Button
                   variant="outline"
                   size="sm"
@@ -531,115 +531,17 @@ export default function CoursePage() {
                     <ReactMarkdown>{course.slides[currentSlideIndex].content}</ReactMarkdown>
                   </div>
 
-                  {/* Quiz section - now in the same view */}
-                  <div className="mt-10 pt-10 border-t border-gray-200">
-                    <div className="flex items-center mb-6">
-                      <div className="bg-secondary/10 p-2 rounded-full mr-3">
-                        <HelpCircle className="h-5 w-5 text-secondary" />
-                      </div>
-                      <h3 className="text-xl font-bold font-heading">Knowledge Check</h3>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="text-lg font-bold font-heading">
-                        {course.slides[currentSlideIndex].quiz.question}
-                      </div>
-                      <div className="space-y-3">
-                        {course.slides[currentSlideIndex].quiz.options.map((option) => {
-                          const currentSlide = course.slides[currentSlideIndex]
-                          const isAnswered = currentSlide.userAnswer !== undefined
-                          const isCorrect = option === currentSlide.quiz.correct_answer
-                          const wasSelected = currentSlide.userAnswer === option
-
-                          // Determine styling based on state
-                          let buttonStyle = {}
-                          let icon = null
-
-                          if (isAnswered) {
-                            if (isCorrect) {
-                              // Correct answer is always green
-                              buttonStyle = {
-                                backgroundColor: "hsl(142.1 76.2% 36.3%)",
-                                color: "white",
-                                borderColor: "hsl(142.1 76.2% 36.3%)",
-                              }
-                              icon = <CheckCircle className="h-5 w-5 text-white" />
-                            } else if (wasSelected) {
-                              // Wrong selected answer is red
-                              buttonStyle = {
-                                backgroundColor: "hsl(0 84.2% 60.2%)",
-                                color: "white",
-                                borderColor: "hsl(0 84.2% 60.2%)",
-                              }
-                              icon = <XCircle className="h-5 w-5 text-white" />
-                            } else {
-                              // Unselected wrong answers are neutral
-                              buttonStyle = {
-                                backgroundColor: "transparent",
-                                color: "hsl(var(--muted-foreground))",
-                                borderColor: "hsl(var(--border))",
-                              }
-                            }
-                          } else {
-                            // Before answering
-                            if (selectedAnswer === option) {
-                              // Currently selected answer
-                              buttonStyle = {
-                                backgroundColor: "hsl(var(--primary) / 0.1)",
-                                borderColor: "hsl(var(--primary))",
-                                borderWidth: "2px",
-                                color: "hsl(var(--primary))",
-                              }
-                            } else {
-                              // Unselected answers
-                              buttonStyle = {
-                                backgroundColor: "transparent",
-                                color: "hsl(var(--foreground))",
-                                borderColor: "hsl(var(--border))",
-                              }
-                            }
-                          }
-
-                          return (
-                            <button
-                              key={option}
-                              className="w-full flex justify-between items-center text-left px-4 py-6 rounded-md border-2 transition-all duration-200 font-body"
-                              style={buttonStyle}
-                              onClick={() => !isAnswered && setSelectedAnswer(option)}
-                              disabled={isAnswered}
-                            >
-                              <span>{option}</span>
-                              {icon}
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                      {!course.slides[currentSlideIndex].userAnswer && (
-                        <Button
-                          onClick={(e) => handleAnswerSubmit(e)}
-                          disabled={!selectedAnswer}
-                          className="w-full bg-secondary hover:bg-secondary/90 text-white py-6 font-body"
-                        >
-                          Check Answer
-                        </Button>
-                      )}
-
-                      {showExplanation && (
-                        <Card className="border-2 border-primary/20 bg-primary/5 rounded-xl">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center font-heading">
-                              <Award className="h-5 w-5 mr-2 text-secondary" />
-                              Explanation
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="font-body">{course.slides[currentSlideIndex].quiz.explanation}</p>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-                  </div>
+                  <QuizSection
+                    question={course?.slides[currentSlideIndex].quiz.question ?? ""}
+                    options={course?.slides[currentSlideIndex].quiz.options ?? []}
+                    correctAnswer={course?.slides[currentSlideIndex].quiz.correct_answer ?? ""}
+                    explanation={course?.slides[currentSlideIndex].quiz.explanation ?? ""}
+                    userAnswer={course?.slides[currentSlideIndex].userAnswer}
+                    selectedAnswer={selectedAnswer}
+                    showExplanation={showExplanation}
+                    onAnswerSelect={setSelectedAnswer}
+                    onAnswerSubmit={handleAnswerSubmit}
+                  />
                 </CardContent>
 
                 <CardFooter className="border-t border-primary/10 p-4 flex justify-between">
@@ -679,25 +581,25 @@ export default function CoursePage() {
                         </div>
                       </HoverCardContent>
                     </HoverCard>
-
-                    {currentSlideIndex < course.slides.length - 1 ? (
-                      <Button
-                        onClick={(e) => handleNextSlide(e)}
-                        disabled={!course?.slides[currentSlideIndex]?.userAnswer}
-                        className="bg-primary btn-playful font-body"
-                      >
-                        Next <ChevronRight className="ml-1 h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleCompleteCourse}
-                        disabled={!completedSlides.includes(currentSlideIndex)}
-                        className="bg-secondary btn-playful font-body"
-                      >
-                        Complete Course <Award className="ml-1 h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
+
+                  {currentSlideIndex < (course?.slides.length ?? 0) - 1 ? (
+                    <Button
+                      onClick={handleNextSlide}
+                      disabled={!course?.slides[currentSlideIndex]?.userAnswer}
+                      className="btn-playful font-body"
+                    >
+                      Next <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleCompleteCourse}
+                      disabled={!course?.slides[currentSlideIndex]?.userAnswer}
+                      className="btn-playful font-body"
+                    >
+                      Complete Course <Award className="ml-1 h-4 w-4" />
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             </motion.div>
@@ -710,7 +612,7 @@ export default function CoursePage() {
         {showCertificate && (
           <Certificate
             userName={userName}
-            courseTitle={course.title}
+            courseTitle={course?.title ?? ""}
             certificateId={certificateId}
             onClose={() => {
               setShowCertificate(false)
@@ -725,4 +627,3 @@ export default function CoursePage() {
     </main>
   )
 }
-
