@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Player, type PlayerRef } from "@remotion/player"
 import { ContinuousCourseComposition } from "@/components/custom/remotion/ContinuousCourseComposition"
 import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface Quiz {
@@ -21,6 +22,8 @@ interface CourseSection {
   content: string
   key_points: string[]
   quiz: Quiz
+  userAnswer?: string
+  isCorrect?: boolean
 }
 
 interface CourseContent {
@@ -31,21 +34,16 @@ interface CourseContent {
 
 export default function VideoCoursePage() {
   const [currentFrame, setCurrentFrame] = useState(0)
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
   const [completedSections, setCompletedSections] = useState<number[]>([])
-  const playerRef = useRef<PlayerRef>(null)
-
-  useEffect(() => {
-    if (playerRef.current) {
-      playerRef.current.addEventListener('timeupdate', (e: any) => {
-        setCurrentFrame(e.detail.frame)
-      })
-    }
-  }, [])
-
-  // Example course content
-  const courseContent: CourseContent = {
+  const [mascotBubble, setMascotBubble] = useState({
+    visible: false,
+    isCorrect: false,
+    message: "",
+  })
+  const [courseContent, setCourseContent] = useState<CourseContent>({
     title: "Introduction to React Hooks",
     description: "Learn the fundamentals of React Hooks with this animated video course",
     sections: [
@@ -144,40 +142,55 @@ export default function VideoCoursePage() {
         },
       },
     ],
-  }
+  })
+  const playerRef = useRef<PlayerRef>(null)
 
-  // Calculate section markers for navigation
-  const sectionDuration = 450 // 15 seconds per section at 30fps
-  const fps = 30
-  const totalDuration = sectionDuration * courseContent.sections.length
-
-  // Calculate current section based on current frame
-  const currentSectionIndex = Math.min(Math.floor(currentFrame / sectionDuration), courseContent.sections.length - 1)
-  const currentSection = courseContent.sections[currentSectionIndex]
-
-  // Calculate progress percentage
-  const progress = ((currentSectionIndex + 1) / courseContent.sections.length) * 100
-
-  // Check if current section is completed
-  const isCurrentSectionCompleted = completedSections.includes(currentSectionIndex)
-
-  const jumpToSection = (sectionIndex: number) => {
+  useEffect(() => {
     if (playerRef.current) {
-      const frameToJumpTo = sectionIndex * sectionDuration
-      playerRef.current.seekTo(frameToJumpTo)
-      setSelectedAnswer(null)
-      setShowExplanation(false)
+      playerRef.current.addEventListener('timeupdate', (e: any) => {
+        setCurrentFrame(e.detail.frame)
+      })
     }
-  }
+  }, [])
 
   const handleAnswerSubmit = () => {
-    if (selectedAnswer) {
-      setShowExplanation(true)
+    if (!selectedAnswer || !courseContent) return
 
-      // Mark section as completed if answer is correct
-      if (selectedAnswer === currentSection.quiz.correct_answer && !completedSections.includes(currentSectionIndex)) {
-        setCompletedSections([...completedSections, currentSectionIndex])
-      }
+    const currentSection = courseContent.sections[currentSectionIndex]
+    const isCorrect = selectedAnswer === currentSection.quiz.correct_answer
+
+    // Store the answer in the course data
+    const updatedContent = { ...courseContent }
+    updatedContent.sections[currentSectionIndex].userAnswer = selectedAnswer
+    updatedContent.sections[currentSectionIndex].isCorrect = isCorrect
+    setCourseContent(updatedContent)
+
+    if (isCorrect && !completedSections.includes(currentSectionIndex)) {
+      setCompletedSections([...completedSections, currentSectionIndex])
+    }
+    setShowExplanation(true)
+
+    // Update mascot bubble
+    setMascotBubble({
+      visible: true,
+      isCorrect,
+      message: isCorrect
+        ? "Great job! That's correct! 🎉"
+        : "Don't worry! Learning from mistakes makes us stronger! 💪",
+    })
+
+    // Hide mascot bubble after 3 seconds
+    setTimeout(() => {
+      setMascotBubble((prev) => ({ ...prev, visible: false }))
+    }, 3000)
+  }
+
+  const jumpToSection = (sectionIndex: number) => {
+    if (sectionIndex >= 0 && sectionIndex < courseContent.sections.length) {
+      setCurrentSectionIndex(sectionIndex)
+      setCurrentFrame(sectionIndex * sectionDuration)
+      setSelectedAnswer(null)
+      setShowExplanation(false)
     }
   }
 
@@ -192,6 +205,19 @@ export default function VideoCoursePage() {
       jumpToSection(currentSectionIndex - 1)
     }
   }
+
+  // Calculate section markers for navigation
+  const sectionDuration = 450 // 15 seconds per section at 30fps
+  const fps = 30
+  const totalDuration = sectionDuration * courseContent.sections.length
+  const currentSection = courseContent.sections[currentSectionIndex]
+  const progress = ((currentFrame % sectionDuration) / sectionDuration) * 100
+
+  // Calculate progress percentage
+  const progressPercentage = ((currentSectionIndex + 1) / courseContent.sections.length) * 100
+
+  // Check if current section is completed
+  const isCurrentSectionCompleted = completedSections.includes(currentSectionIndex)
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8">
@@ -266,76 +292,79 @@ export default function VideoCoursePage() {
                       <div className="text-lg font-bold font-heading">{currentSection.quiz.question}</div>
                       <div className="space-y-3">
                         {currentSection.quiz.options.map((option) => {
-                          const isSelected = selectedAnswer === option
+                          const isAnswered = currentSection.userAnswer !== undefined
                           const isCorrect = option === currentSection.quiz.correct_answer
+                          const wasSelected = currentSection.userAnswer === option
 
                           // Determine styling based on state
-                          const buttonStyle = {}
-                          const icon = null
+                          let buttonStyle = {}
+                          let icon = null
 
-                          if (showExplanation) {
+                          if (isAnswered) {
                             if (isCorrect) {
                               // Correct answer is always green
-                              return (
-                                <Button
-                                  key={option}
-                                  className="w-full justify-between text-left px-4 py-6 h-auto font-body bg-green-600 hover:bg-green-700 text-white"
-                                  disabled
-                                >
-                                  <span>{option}</span>
-                                  <CheckCircle className="h-5 w-5 text-white" />
-                                </Button>
-                              )
-                            } else if (isSelected) {
+                              buttonStyle = {
+                                backgroundColor: "hsl(142.1 76.2% 36.3%)",
+                                color: "white",
+                                borderColor: "hsl(142.1 76.2% 36.3%)",
+                              }
+                              icon = <CheckCircle className="h-5 w-5 text-white" />
+                            } else if (wasSelected) {
                               // Wrong selected answer is red
-                              return (
-                                <Button
-                                  key={option}
-                                  variant="destructive"
-                                  className="w-full justify-between text-left px-4 py-6 h-auto font-body"
-                                  disabled
-                                >
-                                  <span>{option}</span>
-                                  <XCircle className="h-5 w-5" />
-                                </Button>
-                              )
+                              buttonStyle = {
+                                backgroundColor: "hsl(0 84.2% 60.2%)",
+                                color: "white",
+                                borderColor: "hsl(0 84.2% 60.2%)",
+                              }
+                              icon = <XCircle className="h-5 w-5 text-white" />
                             } else {
                               // Unselected wrong answers are neutral
-                              return (
-                                <Button
-                                  key={option}
-                                  variant="outline"
-                                  className="w-full justify-between text-left px-4 py-6 h-auto font-body"
-                                  disabled
-                                >
-                                  <span>{option}</span>
-                                </Button>
-                              )
+                              buttonStyle = {
+                                backgroundColor: "transparent",
+                                color: "hsl(var(--muted-foreground))",
+                                borderColor: "hsl(var(--border))",
+                              }
                             }
                           } else {
-                            // Before checking answer
-                            return (
-                              <Button
-                                key={option}
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-between text-left px-4 py-6 h-auto font-body",
-                                  isSelected && "bg-primary/10 border-primary border-2 text-primary",
-                                )}
-                                onClick={() => setSelectedAnswer(option)}
-                              >
-                                <span>{option}</span>
-                              </Button>
-                            )
+                            // Before answering
+                            if (selectedAnswer === option) {
+                              // Currently selected answer
+                              buttonStyle = {
+                                backgroundColor: "hsl(var(--primary) / 0.1)",
+                                borderColor: "hsl(var(--primary))",
+                                borderWidth: "2px",
+                                color: "hsl(var(--primary))",
+                              }
+                            } else {
+                              // Unselected answers
+                              buttonStyle = {
+                                backgroundColor: "transparent",
+                                color: "hsl(var(--foreground))",
+                                borderColor: "hsl(var(--border))",
+                              }
+                            }
                           }
+
+                          return (
+                            <button
+                              key={option}
+                              className="w-full flex justify-between items-center text-left px-4 py-6 rounded-md border-2 transition-all duration-200 font-body"
+                              style={buttonStyle}
+                              onClick={() => !isAnswered && setSelectedAnswer(option)}
+                              disabled={isAnswered}
+                            >
+                              <span>{option}</span>
+                              {icon}
+                            </button>
+                          )
                         })}
                       </div>
 
-                      {!showExplanation && (
+                      {!currentSection.userAnswer && (
                         <Button
                           onClick={handleAnswerSubmit}
                           disabled={!selectedAnswer}
-                          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 btn-playful"
+                          className="w-full bg-secondary hover:bg-secondary/90 text-white py-6 font-body"
                         >
                           Check Answer
                         </Button>
@@ -345,7 +374,7 @@ export default function VideoCoursePage() {
                         <Card className="border-2 border-primary/20 bg-primary/5 rounded-xl">
                           <CardHeader className="pb-2">
                             <CardTitle className="text-lg flex items-center font-heading">
-                              <Award className="h-5 w-5 mr-2 text-primary" />
+                              <Award className="h-5 w-5 mr-2 text-secondary" />
                               Explanation
                             </CardTitle>
                           </CardHeader>
@@ -359,6 +388,31 @@ export default function VideoCoursePage() {
                 </CardContent>
               </Card>
 
+              {/* Mascot Video */}
+              <AnimatePresence>
+                {mascotBubble.visible && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 100 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 100 }}
+                    className="fixed bottom-0 right-8 z-50"
+                  >
+                    <div className="w-48 h-48 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm border-2 border-white/20 shadow-lg">
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-contain"
+                        style={{ transform: 'scale(1)' }}
+                      >
+                        <source src="/videos/mascot.mp4" type="video/mp4" />
+                      </video>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="flex justify-between gap-4">
                 <Button
                   variant="outline"
@@ -370,10 +424,8 @@ export default function VideoCoursePage() {
                 </Button>
                 <Button
                   onClick={handleNextSection}
-                  disabled={
-                    currentSectionIndex === courseContent.sections.length - 1 ||
-                    (!isCurrentSectionCompleted && currentSectionIndex !== 0)
-                  }
+                  disabled={currentSectionIndex === courseContent.sections.length - 1 ||
+                    (!courseContent.sections[currentSectionIndex]?.userAnswer && currentSectionIndex !== 0)}
                   className="px-6 bg-primary btn-playful font-body"
                 >
                   Next <ChevronRight className="ml-1 h-4 w-4" />
