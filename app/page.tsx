@@ -8,6 +8,7 @@ import { Search, ChevronRight } from "lucide-react"
 import { LoadingState } from "@/components/custom/LoadingState"
 import { motion } from "framer-motion"
 import { CourseTile } from "@/components/custom/CourseTile"
+import type { DifficultyType, CategoryType, CourseType } from "@/components/custom/CourseTile"
 
 interface Quiz {
   question: string
@@ -25,14 +26,14 @@ interface Slide {
 
 interface Course {
   title: string
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "All Levels"
+  difficulty: DifficultyType
   completion: number
   icon: string
   tags: string[]
-  category?: string
+  category?: CategoryType
   slides?: Slide[]
   creator?: string
-  type?: "slides" | "video"
+  type?: CourseType
 }
 
 // Sample course data

@@ -4,8 +4,12 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Star, ArrowRight } from "lucide-react"
 
+export type DifficultyType = "Beginner" | "Intermediate" | "Advanced" | "All Levels"
+export type CategoryType = "Technology" | "Science" | "Business" | "Arts" | "Health" | "Language" | "Mathematics" | "History" | "Lifestyle" | "Other"
+export type CourseType = "slides" | "video"
+
 // Difficulty levels with emojis
-const difficultyEmojis: { [key: string]: string } = {
+const difficultyEmojis: Record<DifficultyType, string> = {
   Beginner: "🌱",
   Intermediate: "🌿",
   Advanced: "🌳",
@@ -13,7 +17,7 @@ const difficultyEmojis: { [key: string]: string } = {
 }
 
 // Categories with emojis
-const categoryEmojis: { [key: string]: string } = {
+const categoryEmojis: Record<CategoryType, string> = {
   Technology: "💻",
   Science: "🔬",
   Business: "📊",
@@ -27,21 +31,21 @@ const categoryEmojis: { [key: string]: string } = {
 }
 
 // Course type emojis
-const typeEmojis: { [key: string]: string } = {
+const typeEmojis: Record<CourseType, string> = {
   slides: "📑",
   video: "🎬",
 }
 
 interface CourseTileProps {
   title: string
-  difficulty: string
+  difficulty: DifficultyType
   completion: number
   icon: string
   creator?: string
-  category?: string
+  category?: CategoryType
   tags?: string[]
   slides?: any[] // Using any for simplicity, but should match your slide structure
-  type?: "slides" | "video" // Add the new type prop
+  type?: CourseType
 }
 
 export function CourseTile({
@@ -68,15 +72,21 @@ export function CourseTile({
         type, // Include the course type
       }
       localStorage.setItem("currentCourse", JSON.stringify(selectedCourse))
-      router.push("/course")
+
+      // Route to the appropriate page based on course type
+      if (type === "video") {
+        router.push("/video-course")
+      } else {
+        router.push("/course")
+      }
     }
   }
 
   // Get the emoji for the difficulty level
-  const difficultyEmoji = difficulty ? difficultyEmojis[difficulty] || "" : ""
+  const difficultyEmoji = difficultyEmojis[difficulty]
 
   // Get the emoji for the category if available
-  const categoryEmoji = category ? categoryEmojis[category] || "" : ""
+  const categoryEmoji = category ? categoryEmojis[category] : ""
 
   // Get the emoji for the course type
   const typeEmoji = typeEmojis[type] || typeEmojis.slides
