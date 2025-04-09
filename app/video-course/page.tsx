@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+
 import { Player, type PlayerRef } from "@remotion/player"
 import { ContinuousCourseComposition } from "@/components/custom/remotion/ContinuousCourseComposition"
 import { CheckCircle, XCircle, HelpCircle, Award, ChevronRight, BookOpen, Star } from "lucide-react"
@@ -307,12 +307,7 @@ export default function VideoCoursePage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="p-4 md:p-6 space-y-6">
-              <div className="flex items-center gap-4">
-                <Progress value={progress} className="flex-1 h-3" />
-                <span className="text-sm font-medium">
-                  {currentSectionIndex + 1} of {courseContent.sections.length}
-                </span>
-              </div>
+
 
               <Card className="border border-muted rounded-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b border-muted">
@@ -326,7 +321,7 @@ export default function VideoCoursePage() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-6">
                   {/* Video Player */}
                   <div className="aspect-video bg-black">
                     <Player
