@@ -24,13 +24,18 @@ interface Slide {
   quiz: Quiz
 }
 
+type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels'
+type Category = 'Technology' | 'Science' | 'Business' | 'Arts' | 'Health' | 'Language' | 'Mathematics' | 'History' | 'Lifestyle' | 'Other'
+
 interface Course {
   title: string
-  difficulty: "Beginner" | "Intermediate" | "Advanced"
+  difficulty: DifficultyLevel
   completion: number
   icon: string
   tags: string[]
   slides?: Slide[]
+  creator?: string
+  category?: Category
 }
 
 // Sample course data
