@@ -14,10 +14,12 @@ interface CertificateProps {
   completionDate?: Date
   certificateId: string
   onClose?: () => void
+  onNameChange?: (name: string) => void
   courseDetails?: {
     difficulty?: string
     topics?: string[]
-    score?: number
+    correctAnswers?: number
+    totalQuestions?: number
   }
 }
 
@@ -27,12 +29,47 @@ export function Certificate({
   completionDate = new Date(),
   certificateId,
   onClose,
+  onNameChange,
   courseDetails = {
     difficulty: "Intermediate",
     topics: ["AI Learning", "Personalized Education", "Interactive Content"],
-    score: 95,
+    correctAnswers: undefined,
+    totalQuestions: undefined,
   },
 }: CertificateProps) {
+  const [editableName, setEditableName] = useState(userName)
+  const [isEditing, setIsEditing] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value
+    setEditableName(newName)
+    onNameChange?.(newName)
+  }
+
+  const handleNameClick = () => {
+    setIsEditing(true)
+    // Focus the input field after a short delay to ensure the input is rendered
+    setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }, 50)
+  }
+
+  const handleNameBlur = () => {
+    setIsEditing(false)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      e.currentTarget.blur()
+    }
+    if (e.key === 'Escape') {
+      setEditableName(userName)
+      e.currentTarget.blur()
+    }
+  }
   const [isDownloading, setIsDownloading] = useState(false)
   const certificateRef = useRef<HTMLDivElement>(null)
 
@@ -156,11 +193,35 @@ export function Certificate({
                 <div className="flex-1 flex flex-col justify-center items-center text-center relative z-10 py-2">
                   <p className="text-lg text-gray-600 font-body">This is to certify that</p>
 
-                  <div className="relative inline-block my-2">
-                    <h2 className="text-3xl md:text-4xl font-bold font-heading text-primary px-4 relative z-10">
-                      {userName}
-                    </h2>
-                    <div className="absolute bottom-2 left-0 right-0 h-3 bg-yellow-300/30 -z-10 transform -rotate-1"></div>
+                  <div className="relative group cursor-pointer my-4" onClick={!isEditing ? handleNameClick : undefined}>
+                    {!isEditing ? (
+                      <>
+                        <h2 className="text-3xl font-bold text-primary font-heading">
+                          {editableName}
+                        </h2>
+                        <div className="absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="text-primary/60 hover:text-primary p-1 rounded-full hover:bg-primary/10 transition-colors"
+                            title="Click to edit name"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={editableName}
+                        onChange={handleNameChange}
+                        onBlur={handleNameBlur}
+                        onKeyDown={handleKeyDown}
+                        className="text-3xl font-bold text-primary font-heading bg-transparent border-b-2 border-primary outline-none text-center w-full"
+                        aria-label="Edit name"
+                      />
+                    )}
                   </div>
 
                   <p className="text-lg text-gray-600 font-body mb-2">has successfully completed the course</p>
@@ -174,10 +235,14 @@ export function Certificate({
 
                   {/* Course Details - Horizontal Layout */}
                   <div className="flex justify-center gap-6 mb-4">
-                    <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 flex items-center">
-                      <Star className="h-4 w-4 text-yellow-500 mr-2" fill="currentColor" />
-                      <span className="text-sm font-medium">Score: {courseDetails.score}%</span>
-                    </div>
+                    {courseDetails.correctAnswers !== undefined && courseDetails.totalQuestions !== undefined && (
+                      <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 flex items-center">
+                        <Star className="h-4 w-4 text-yellow-500 mr-2" fill="currentColor" />
+                        <span className="text-sm font-medium">
+                          Score: {((courseDetails.correctAnswers / courseDetails.totalQuestions) * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    )}
 
                     <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 flex items-center">
                       <Calendar className="h-4 w-4 text-primary mr-2" />

@@ -614,6 +614,12 @@ export default function CoursePage() {
             userName={userName}
             courseTitle={course?.title ?? ""}
             certificateId={certificateId}
+            courseDetails={{
+              difficulty: "Intermediate",
+              topics: ["AI Learning", "Personalized Education", "Interactive Content"],
+              correctAnswers: completedSlides.filter(slideIndex => course?.slides[slideIndex]?.isCorrect).length,
+              totalQuestions: course?.slides.length ?? 0
+            }}
             onClose={() => {
               setShowCertificate(false)
               // Delay navigation to show the certificate

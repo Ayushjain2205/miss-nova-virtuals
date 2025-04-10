@@ -405,6 +405,12 @@ export default function VideoCoursePage() {
             userName="You"
             courseTitle={courseContent.title}
             certificateId={generateCertificateId()}
+            courseDetails={{
+              difficulty: "Intermediate",
+              topics: ["AI Learning", "Personalized Education", "Interactive Content"],
+              correctAnswers: completedSections.filter(sectionIndex => courseContent.sections[sectionIndex]?.isCorrect).length,
+              totalQuestions: courseContent.sections.length
+            }}
             onClose={() => {
               setShowCertificate(false)
               // Delay navigation to show the certificate
