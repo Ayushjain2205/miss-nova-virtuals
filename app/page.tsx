@@ -265,7 +265,7 @@ export default function Home() {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 260, damping: 20 }}
               >
-                <div className="bg-secondary text-white px-3 py-1 rounded-full text-sm font-medium animate-bounce shadow-lg">
+                <div className="bg-secondary text-white px-3 py-1 rounded-full text-sm -medium animate-bounce shadow-lg">
                   {motivationalMessage}
                 </div>
               </motion.div>

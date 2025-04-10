@@ -16,7 +16,6 @@ interface CertificateProps {
   onClose?: () => void
   courseDetails?: {
     difficulty?: string
-    duration?: string
     topics?: string[]
     score?: number
   }
@@ -30,7 +29,6 @@ export function Certificate({
   onClose,
   courseDetails = {
     difficulty: "Intermediate",
-    duration: "5 weeks",
     topics: ["AI Learning", "Personalized Education", "Interactive Content"],
     score: 95,
   },
@@ -127,26 +125,27 @@ export function Certificate({
                 <div className="absolute bottom-0 left-0 w-24 h-24 border-b-4 border-l-4 border-primary/30 rounded-bl-xl"></div>
                 <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-primary/30 rounded-br-xl"></div>
 
-                {/* Decorative Ribbon */}
+                {/* Decorative Ribbon
                 <div className="absolute -top-1 -right-1 w-32 h-32 overflow-hidden">
                   <div className="absolute top-0 right-0 transform rotate-45 translate-y-16 -translate-x-6 w-40 text-center py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-xs font-bold shadow-md">
                     CERTIFIED
                   </div>
-                </div>
+                </div> */}
 
                 {/* Certificate Header */}
                 <div className="text-center mb-2 relative">
-                  <div className="flex justify-center items-center">
-                    <div className="relative h-16 w-16 bg-primary/10 rounded-full p-1 mr-4">
-                      <Mascot width={60} height={60} />
+                  <div className="flex justify-center items-center gap-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/30 to-yellow-600/30"></div>
+                      <div className="relative z-10 bg-white rounded-full p-2 border-2 border-yellow-500/50 shadow-lg">
+                        <Award className="h-16 w-16 text-yellow-600" />
+                      </div>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-full blur-sm"></div>
                     </div>
                     <div>
                       <h1 className="text-4xl font-bold text-primary font-heading tracking-wide">
-                        CERTIFICATE OF ACHIEVEMENT
+                        CERTIFICATE OF COMPLETION
                       </h1>
-                      <div className="text-lg text-secondary font-medium font-heading tracking-wider">
-                        MISS NOVA ACADEMY
-                      </div>
                     </div>
                   </div>
 
@@ -188,7 +187,7 @@ export function Certificate({
                     <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 flex items-center">
                       <Sparkles className="h-4 w-4 text-secondary mr-2" />
                       <span className="text-sm font-medium">
-                        {courseDetails.difficulty} • {courseDetails.duration}
+                        {courseDetails.difficulty}
                       </span>
                     </div>
                   </div>
@@ -214,19 +213,9 @@ export function Certificate({
                 <div className="flex justify-between items-center mt-2 px-8">
                   <div className="text-center">
                     <div className="border-b-2 border-gray-400 pb-1 mb-1 w-40">
-                      <div className="font-heading text-lg font-medium text-primary italic">Miss Nova</div>
+                      <div className="font-cederville text-[26px] text-primary">Nova</div>
                     </div>
                     <div className="text-sm text-gray-600">AI Instructor</div>
-                  </div>
-
-                  <div className="flex flex-col items-center">
-                    <div className="relative mb-1">
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/30 to-yellow-600/30"></div>
-                      <div className="relative z-10 bg-white rounded-full p-1 border-2 border-yellow-500/50">
-                        <Award className="h-14 w-14 text-yellow-600" />
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600">Official Seal</div>
                   </div>
 
                   <div className="text-center">

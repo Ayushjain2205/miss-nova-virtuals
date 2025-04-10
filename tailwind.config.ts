@@ -18,6 +18,11 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-quicksand)'],
+        heading: ['var(--font-nunito)'],
+        cederville: ['var(--font-cederville)'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
