@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { motion } from "framer-motion"
+
 import { Button } from "@/components/ui/button"
 import { Mascot } from "@/components/custom/Mascot"
 import { Download, Share2, Trophy, Award, Calendar, QrCode, CheckCircle, Star, Sparkles } from "lucide-react"
@@ -84,13 +84,7 @@ export function Certificate({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <motion.div
-        className="w-full max-w-5xl"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      >
+      <div className="w-full max-w-5xl">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold font-heading flex items-center">
@@ -227,7 +221,7 @@ export function Certificate({
 
                   <div className="flex flex-col items-center">
                     <div className="relative mb-1">
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/30 to-yellow-600/30 animate-pulse"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/30 to-yellow-600/30"></div>
                       <div className="relative z-10 bg-white rounded-full p-1 border-2 border-yellow-500/50">
                         <Award className="h-14 w-14 text-yellow-600" />
                       </div>
@@ -250,16 +244,7 @@ export function Certificate({
                   </div>
                 </div>
 
-                {/* Decorative Elements */}
-                <div className="absolute top-1/4 left-10 opacity-10 text-primary">
-                  <Sparkles className="h-12 w-12" />
-                </div>
-                <div className="absolute bottom-1/4 right-10 opacity-10 text-secondary">
-                  <Star className="h-12 w-12" fill="currentColor" />
-                </div>
-                <div className="absolute bottom-10 left-1/3 opacity-10 text-primary">
-                  <Trophy className="h-12 w-12" />
-                </div>
+
               </div>
             </div>
           </div>
@@ -269,7 +254,7 @@ export function Certificate({
             degree.
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

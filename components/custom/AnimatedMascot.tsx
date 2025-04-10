@@ -10,10 +10,12 @@ interface AnimatedMascotProps {
 
 export function AnimatedMascot({ visible, isCorrect }: AnimatedMascotProps) {
   const [shouldRender, setShouldRender] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
 
   useEffect(() => {
     if (visible) {
       setShouldRender(true)
+      setAnimationKey(prev => prev + 1)
     }
   }, [visible])
 
@@ -27,7 +29,7 @@ export function AnimatedMascot({ visible, isCorrect }: AnimatedMascotProps) {
     <AnimatePresence mode="wait">
       {shouldRender && (
         <motion.div
-          key={`mascot-${Date.now()}`}
+          key={`mascot-${animationKey}`}
           initial={{ opacity: 0, y: 100, x: 32 }}
           animate={{
             opacity: [0, 1, 1, 1, 0.8, 0],
