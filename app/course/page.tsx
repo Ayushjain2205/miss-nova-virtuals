@@ -138,7 +138,7 @@ export default function CoursePage() {
     setCertificateId(generateCertificateId())
 
     // For demo purposes, set a name
-    setUserName("Alex Learner")
+    setUserName("Your Name")
 
     setIsLoading(false)
   }, [])
