@@ -242,11 +242,28 @@ export default function ExplorePage() {
       <div className="max-w-6xl mx-auto">
         {/* Hero section */}
         <div className="relative bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl p-6 md:p-10 mb-8 overflow-hidden">
-          <div className="absolute right-0 bottom-0 opacity-20 md:opacity-40">
-            <Mascot width={200} height={200} />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <motion.div
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <video 
+                className="rounded-full w-[200px] h-[200px] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="/videos/thinking.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </motion.div>
           </div>
 
           <div className="relative z-10 max-w-2xl">
+
+
             <motion.h1
               className="text-3xl md:text-4xl font-bold text-primary mb-4 font-heading"
               initial={{ opacity: 0, y: 20 }}

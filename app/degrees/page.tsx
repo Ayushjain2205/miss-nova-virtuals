@@ -281,7 +281,7 @@ export default function DegreesPage() {
                       muted
                       playsInline
                     >
-                      <source src="/videos/mascot.mp4" type="video/mp4" />
+                      <source src="/videos/studying.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   </div>
