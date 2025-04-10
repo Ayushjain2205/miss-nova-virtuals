@@ -1,28 +1,48 @@
+"use client"
+
 import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
 
 interface AnimatedMascotProps {
   visible: boolean
+  isCorrect: boolean
 }
 
-export function AnimatedMascot({ visible }: AnimatedMascotProps) {
+export function AnimatedMascot({ visible, isCorrect }: AnimatedMascotProps) {
+  const [shouldRender, setShouldRender] = useState(false)
+
+  useEffect(() => {
+    if (visible) {
+      setShouldRender(true)
+    }
+  }, [visible])
+
+  const handleAnimationComplete = () => {
+    if (!visible) {
+      setShouldRender(false)
+    }
+  }
+
   return (
-    <AnimatePresence>
-      {visible && (
+    <AnimatePresence mode="wait">
+      {shouldRender && (
         <motion.div
+          key={`mascot-${Date.now()}`}
           initial={{ opacity: 0, y: 100, x: 32 }}
           animate={{
-            opacity: [0, 1, 1, 0],
-            y: [100, 0, -200, -400],
-            x: [32, 48, 32, 48]
+            opacity: [0, 1, 1, 1, 0.8, 0],
+            y: [100, 0, 0, -200, -400],
+            x: [32, 48, 32, 48, 32]
           }}
           transition={{
-            duration: 3,
+            duration: 2.5,
             ease: "easeOut",
-            times: [0, 0.2, 0.8, 1]
+            times: [0, 0.2, 0.6, 0.7, 0.9, 1]
           }}
+          onAnimationComplete={handleAnimationComplete}
           className="fixed bottom-0 left-8 z-50"
         >
-          <div className="w-48 h-48 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm border-2 border-white/20 shadow-lg">
+          <div className="w-48 h-48 rounded-full overflow-hidden bg-white/30 backdrop-blur-md border-2 border-white/40 shadow-lg">
             <video
               autoPlay
               muted
@@ -31,7 +51,7 @@ export function AnimatedMascot({ visible }: AnimatedMascotProps) {
               className="w-full h-full object-contain"
               style={{ transform: "scale(1)" }}
             >
-              <source src="/videos/mascot.mp4" type="video/mp4" />
+              <source src={isCorrect ? "/videos/happy.mp4" : "/videos/sad.mp4"} type="video/mp4" />
             </video>
           </div>
         </motion.div>

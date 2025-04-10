@@ -352,7 +352,7 @@ export default function VideoCoursePage() {
                 </CardContent>
               </Card>
 
-              <AnimatedMascot visible={mascotBubble.visible} />
+              <AnimatedMascot visible={mascotBubble.visible} isCorrect={mascotBubble.isCorrect} />
 
               <div className="flex justify-between gap-4">
                 <Button

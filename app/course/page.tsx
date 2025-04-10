@@ -343,7 +343,7 @@ export default function CoursePage() {
               }
             }}
           >
-            <AnimatedMascot visible={mascotBubble.visible} />
+            <AnimatedMascot visible={mascotBubble.visible} isCorrect={mascotBubble.isCorrect} />
           </motion.div>
         )}
       </AnimatePresence>
