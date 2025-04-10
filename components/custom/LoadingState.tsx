@@ -57,7 +57,7 @@ export function LoadingState() {
                   muted
                   playsInline
                 >
-                  <source src="/videos/mascot.mp4" type="video/mp4" />
+                  <source src="/videos/studying.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
                 <div className="absolute -bottom-3 right-0 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">

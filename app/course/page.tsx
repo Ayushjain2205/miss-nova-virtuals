@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import {
   CheckCircle,
-  XCircle,
   HelpCircle,
   Award,
   BookOpen,
