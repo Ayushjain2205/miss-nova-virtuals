@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -11,6 +12,8 @@ import { QuizSection } from "@/components/custom/QuizSection"
 import { AnimatedMascot } from "@/components/custom/AnimatedMascot"
 import { PointsDisplay } from "@/components/custom/PointsDisplay"
 import { LeaderboardButton } from "@/components/custom/LeaderboardButton"
+import { Certificate } from "@/components/custom/Certificate"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface Quiz {
@@ -66,6 +69,8 @@ const VIDEO_CONFIG = {
 } as const
 
 export default function VideoCoursePage() {
+  const router = useRouter()
+
   // State
   const [isLoading, setIsLoading] = useState(true)
   const [currentFrame, setCurrentFrame] = useState(0)
@@ -76,6 +81,7 @@ export default function VideoCoursePage() {
   const [points, setPoints] = useState(0)
   const [recentPoints, setRecentPoints] = useState(0)
   const [userRank, setUserRank] = useState(11)
+  const [showCertificate, setShowCertificate] = useState(false)
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(
     [...mockLeaderboardData, { id: "user", name: "You", points: 0, rank: 11, isCurrentUser: true }]
   )
@@ -89,6 +95,13 @@ export default function VideoCoursePage() {
     description: "",
     sections: [],
   })
+
+  // Helper functions
+  const generateCertificateId = () => {
+    const timestamp = Date.now().toString(36)
+    const random = Math.random().toString(36).substring(2, 8)
+    return `${timestamp}-${random}`
+  }
 
   // Refs
   const playerRef = useRef<PlayerRef>(null)
@@ -153,50 +166,53 @@ export default function VideoCoursePage() {
   }
 
   const handleAnswerSubmit = () => {
-    if (!selectedAnswer || !courseContent.sections[currentSectionIndex]) return
+    if (!selectedAnswer) return
 
-    const isCorrect =
-      courseContent.sections[currentSectionIndex].quiz.correct_answer ===
-      selectedAnswer
+    const currentSection = courseContent.sections[currentSectionIndex]
+    const isCorrect = selectedAnswer === currentSection.quiz.correct_answer
 
+    // Update section with user's answer
     const updatedSections = [...courseContent.sections]
     updatedSections[currentSectionIndex] = {
-      ...updatedSections[currentSectionIndex],
+      ...currentSection,
       userAnswer: selectedAnswer,
       isCorrect,
     }
 
-    setCourseContent({
-      ...courseContent,
+    setCourseContent((prev) => ({
+      ...prev,
       sections: updatedSections,
-    })
+    }))
 
-    if (isCorrect) {
-      awardPoints(100)
-      if (!completedSections.includes(currentSectionIndex)) {
-        setCompletedSections([...completedSections, currentSectionIndex])
-        awardPoints(200)
-      }
+    // Update completed sections
+    if (!completedSections.includes(currentSectionIndex)) {
+      setCompletedSections((prev) => [...prev, currentSectionIndex])
     }
 
+    // Show explanation
     setShowExplanation(true)
 
-    // Show mascot bubble
+    // Show mascot feedback
     setMascotBubble({
       visible: true,
       isCorrect,
       message: isCorrect
         ? "Great job! You got it right! 🎉"
-        : "Don't worry, learning from mistakes makes us stronger! 💪",
+        : "Don't worry! Keep learning and try again! 💪",
     })
 
-    // Hide mascot bubble after 3 seconds
+    // Award points if correct
+    if (isCorrect) {
+      awardPoints(100)
+    }
+
+    // Hide mascot after 3 seconds
     setTimeout(() => {
-      setMascotBubble((prev) => ({
-        ...prev,
-        visible: false,
-      }))
+      setMascotBubble((prev) => ({ ...prev, visible: false }))
     }, 3000)
+
+    // Reset for next question
+    setSelectedAnswer(null)
   }
 
   const jumpToSection = (sectionIndex: number) => {
@@ -347,26 +363,58 @@ export default function VideoCoursePage() {
                 >
                   Previous
                 </Button>
-                <Button
-                  onClick={handleNextSection}
-                  disabled={currentSectionIndex === courseContent.sections.length - 1 ||
-                    (!courseContent.sections[currentSectionIndex]?.userAnswer && currentSectionIndex !== 0)}
-                  className="px-6 bg-primary btn-playful font-body"
-                >
-                  Next <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
+                {currentSectionIndex === courseContent.sections.length - 1 && completedSections.length === courseContent.sections.length ? (
+                  <Button
+                    onClick={() => setShowCertificate(true)}
+                    className="px-6 bg-primary btn-playful font-body"
+                  >
+                    Complete Course <Award className="ml-1 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleNextSection}
+                    disabled={!courseContent.sections[currentSectionIndex]?.userAnswer && currentSectionIndex !== 0}
+                    className="px-6 bg-primary btn-playful font-body"
+                  >
+                    Next <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
+          {completedSections.length === courseContent.sections.length && (
+            <div className="flex items-center gap-2 text-primary font-medium">
+              <Award className="h-5 w-5" />
+              Course completed! You've earned {points} points
+            </div>
+          )}
           <Button variant="ghost" className="text-muted-foreground font-body">
             <BookOpen className="h-4 w-4 mr-2" />
             View Course Overview
           </Button>
         </div>
       </div>
+
+      {/* Certificate Modal */}
+      <AnimatePresence>
+        {showCertificate && (
+          <Certificate
+            userName="You"
+            courseTitle={courseContent.title}
+            certificateId={generateCertificateId()}
+            onClose={() => {
+              setShowCertificate(false)
+              // Delay navigation to show the certificate
+              setTimeout(() => {
+                router.push("/")
+              }, 500)
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
