@@ -63,7 +63,7 @@ interface LeaderboardEntry {
 // Video player configuration
 const VIDEO_CONFIG = {
   fps: 30,
-  totalDuration: 600,
+  totalDuration: 1800, // Increased to 2 minutes (30fps * 120 seconds)
   compositionWidth: 1920,
   compositionHeight: 1080,
 } as const

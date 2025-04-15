@@ -86,7 +86,7 @@ const mockCourse = {
 
 export async function GET() {
   // Simulate a delay to mimic API latency
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 5000))
 
   return NextResponse.json(mockCourse)
 }

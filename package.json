@@ -40,6 +40,7 @@
     "@radix-ui/react-toggle-group": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@remotion/player": "^4.0.79",
+    "@virtuals-protocol/game": "^0.1.13",
     "ai": "latest",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",

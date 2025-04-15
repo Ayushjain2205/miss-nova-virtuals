@@ -134,13 +134,15 @@ export default function CreateCoursePage() {
       data.difficulty = difficulty
       data.courseType = courseType
 
-      // Store the course data in localStorage
+      // Store course data in localStorage
       localStorage.setItem("currentCourse", JSON.stringify(data))
 
-      // Redirect to the course page
-      setTimeout(() => {
+      // Navigate based on course type
+      if (courseType === "video") {
+        router.push("/video-course")
+      } else {
         router.push("/course")
-      }, 1000)
+      }
     } catch (err) {
       console.error("Error generating course:", err)
       setError(err instanceof Error ? err.message : "Failed to generate course")
