@@ -7,9 +7,6 @@ import { Mascot } from "@/components/custom/Mascot";
 import { BookOpen, GraduationCap, Sparkles, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ConnectButton } from "thirdweb/react";
-import { client } from "@/lib/client";
-import { baseSepolia } from "thirdweb/chains";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -71,7 +68,6 @@ export function Navbar() {
 
         {/* Create Course Button */}
         <div className="hidden md:flex items-center gap-4">
-          <ConnectButton client={client} theme="light" chain={baseSepolia} />
           <Link href="/create-course" className="w-full">
             <Button className="w-full btn-playful font-body" size="sm">
               <Sparkles className="h-4 w-4 mr-2" />
